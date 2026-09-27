@@ -63,14 +63,18 @@ export function Navbar() {
 
   return (
     <motion.header
-      animate={{ y: hidden ? -80 : 0 }}
+      animate={{ y: hidden ? -110 : 0 }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className={
-        "fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 " +
-        (scrolled ? "border-border bg-background/95 backdrop-blur-md shadow-sm" : "border-transparent bg-transparent")
-      }
+      className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4"
     >
-      <div className="container-editorial flex h-16 items-center justify-between">
+      <div
+        className={
+          "relative mx-auto flex h-14 w-full max-w-6xl items-center justify-between rounded-full border px-3 transition-all duration-300 sm:h-16 sm:px-5 " +
+          (scrolled
+            ? "border-border bg-background/90 shadow-lg shadow-black/5 backdrop-blur-xl"
+            : "border-border/60 bg-background/70 shadow-sm backdrop-blur-md")
+        }
+      >
         {/* Logo */}
         <Link href="#home" className="group flex items-center gap-3">
           <div className="relative h-10 w-10 sm:h-14 sm:w-14">

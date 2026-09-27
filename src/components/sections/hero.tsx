@@ -1,23 +1,44 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { profile } from "@/data/profile";
 import { Button } from "@/components/ui/button";
+import { SplitText } from "@/components/ui/split-text";
 import { ArrowDown, MapPin } from "lucide-react";
+
+const STAGGER = 0.06;
 
 export function Hero() {
   const t = useTranslations();
   const firstName = profile.name.split(" ")[0].toUpperCase();
   const lastName = profile.name.split(" ").slice(1).join(" ").toUpperCase();
+  const headingClass =
+    "font-display block overflow-hidden text-[clamp(2rem,8vw,6rem)] font-bold leading-[0.9] tracking-tight";
+  const lastNameDelay = firstName.length * STAGGER;
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const onSplashDone = () => setReady(true);
+    window.addEventListener("splash:done", onSplashDone);
+    const fallback = setTimeout(() => setReady(true), 4500);
+    return () => {
+      window.removeEventListener("splash:done", onSplashDone);
+      clearTimeout(fallback);
+    };
+  }, []);
 
   return (
-    <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16">
+    <section
+      id="home"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden pb-24 pt-16 sm:pb-20"
+    >
       <div className="container-editorial relative z-10 py-8 text-center">
         {/* Status Badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="mb-6 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
         >
@@ -35,26 +56,24 @@ export function Hero() {
         </motion.div>
 
         {/* Main Heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-6"
-        >
-          <h1 className="font-display text-[clamp(2rem,8vw,6rem)] font-bold leading-[0.9] tracking-tight">
-            {firstName}
-          </h1>
-          <h1 className="font-display text-[clamp(2rem,8vw,6rem)] font-bold leading-[0.9] tracking-tight">
-            {lastName}
-          </h1>
-        </motion.div>
+        <div className="mb-8">
+          <SplitText as="h1" text={firstName} className={headingClass} delay={0} stagger={STAGGER} play={ready} />
+          <SplitText
+            as="h1"
+            text={lastName}
+            className={headingClass}
+            delay={lastNameDelay}
+            stagger={STAGGER}
+            play={ready}
+          />
+        </div>
 
         {/* Role Tags */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-6 flex flex-wrap items-center justify-center gap-3 text-body"
+          animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6, delay: 1.9, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 mb-6 flex flex-wrap items-center justify-center gap-3 text-body"
         >
           <span className="rounded-full border border-border bg-foreground px-4 py-1.5 font-medium text-background">
             {t("hero.student")}
@@ -70,8 +89,8 @@ export function Hero() {
         {/* Scroll Indicator */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          animate={ready ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.6, delay: 2.2 }}
           className="mt-8"
         >
           <p className="mb-3 text-caption uppercase tracking-wider text-foreground/60">{t("hero.scrollDown")}</p>

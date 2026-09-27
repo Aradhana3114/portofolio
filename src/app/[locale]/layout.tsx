@@ -5,6 +5,7 @@ import { hasLocale } from "next-intl";
 import { routing } from "@/i18n/routing";
 import { Familjen_Grotesk, Inter } from "next/font/google";
 import type { Metadata } from "next";
+import { MusicPlayer } from "@/components/music-player";
 import "../globals.css";
 
 const displayFont = Familjen_Grotesk({
@@ -51,6 +52,7 @@ export default async function LocaleLayout({
       <body className="font-body antialiased">
         <NextIntlClientProvider messages={messages}>
           {children}
+          <MusicPlayer />
         </NextIntlClientProvider>
       </body>
     </html>

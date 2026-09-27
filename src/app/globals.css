@@ -64,6 +64,51 @@ body {
   animation: gradient-shift 8s ease infinite;
 }
 
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation-name: marquee;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: var(--marquee-duration, 20s);
+}
+
+@keyframes music-dot {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.75);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-music-dot {
+  animation: music-dot 1.1s ease-in-out infinite;
+}
+
+@keyframes music-bar {
+  0%, 100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.animate-music-bar {
+  animation: music-bar 0.9s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
 ::selection {
   background: rgb(var(--accent) / 0.2);
   color: rgb(var(--foreground));
@@ -102,5 +147,10 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .animate-marquee {
+    animation-duration: var(--marquee-duration, 20s) !important;
+    animation-iteration-count: infinite !important;
   }
 }

@@ -116,6 +116,19 @@
     "send": "Send Message",
     "success": "Message sent successfully!"
   },
+  "music": {
+    "label": "Radio",
+    "playlist": "Playlist",
+    "close": "Close",
+    "play": "Play",
+    "pause": "Pause",
+    "previous": "Previous track",
+    "next": "Next track",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "seek": "Seek",
+    "empty": "Add your playlist"
+  },
   "splash": {
     "greeting": "Hello Everyone!"
   },
