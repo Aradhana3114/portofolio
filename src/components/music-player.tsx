@@ -130,7 +130,6 @@ export function MusicPlayer() {
   useEffect(() => {
     setCurrent(0);
     setDuration(0);
-    failures.current = 0;
     measure();
     const yt = ytRef.current;
     if (!yt || !ytReady) return;
@@ -199,6 +198,7 @@ export function MusicPlayer() {
               if (cancelled) return;
               if (event.data === YT_STATE_PLAYING) {
                 loadingRef.current = false;
+                failures.current = 0;
                 if (isCurrentYtTrack()) setPlayState(true);
                 return;
               }
@@ -219,7 +219,7 @@ export function MusicPlayer() {
                 setPlayState(false);
                 return;
               }
-              if (playingRef.current) setIndex((prev) => (prev + 1) % playlist.length);
+              setIndex((prev) => (prev + 1) % playlist.length);
             },
           },
         });
@@ -251,7 +251,7 @@ export function MusicPlayer() {
       setPlayState(false);
       return;
     }
-    if (playingRef.current) goTo(index + 1);
+    goTo(index + 1);
   };
 
   const handleSeek = (event: MouseEvent<HTMLButtonElement>) => {
@@ -360,6 +360,9 @@ export function MusicPlayer() {
           preload="metadata"
           onTimeUpdate={(e) => setCurrent(e.currentTarget.currentTime)}
           onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
+          onPlaying={() => {
+            failures.current = 0;
+          }}
           onEnded={() => skip(1)}
           onError={handleError}
         />

@@ -27,7 +27,7 @@ export const playlist: Track[] = [
     id: "about-you",
     title: "About You",
     artist: "The 1975",
-    url: "https://music.youtube.com/watch?v=tGv7CUutzqU&si=N3QHbQM3D_OIDLMB",
+    url: "https://www.youtube.com/watch?v=5qq8ONq0hl8",
   },
   {
     id: "i-lay-my-love-on-you",
@@ -54,7 +54,7 @@ export const playlist: Track[] = [
     url: "https://music.youtube.com/watch?v=e7yg0A-PCTI&si=aynexqDM7YfrmUIk2",
   },
   {
-    id: "Night-Changes",
+    id: "night-changes",
     title: "Night Changes",
     artist: "One Direction",
     url: "https://music.youtube.com/watch?v=8BiLurrzFRw&si=XdCUa1wqqMuvmHn8",
