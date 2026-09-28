@@ -23,7 +23,6 @@ export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { scrollY } = useScroll();
-  const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { theme, toggle } = useTheme();
   const [langOpen, setLangOpen] = useState(false);
@@ -39,8 +38,6 @@ export function Navbar() {
   ];
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious() ?? 0;
-    setHidden(latest > previous && latest > 120);
     setScrolled(latest > 20);
   });
 
@@ -63,16 +60,14 @@ export function Navbar() {
 
   return (
     <motion.header
-      animate={{ y: hidden ? -110 : 0 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4"
     >
       <div
         className={
           "relative mx-auto flex h-14 w-full max-w-6xl items-center justify-between rounded-full border px-3 transition-all duration-300 sm:h-16 sm:px-5 " +
           (scrolled
-            ? "border-border bg-background/90 shadow-lg shadow-black/5 backdrop-blur-xl"
-            : "border-border/60 bg-background/70 shadow-sm backdrop-blur-md")
+            ? "border-border bg-background/95 shadow-lg shadow-black/10 backdrop-blur-xl"
+            : "border-border bg-background/90 shadow-md shadow-black/10 backdrop-blur-xl")
         }
       >
         {/* Logo */}

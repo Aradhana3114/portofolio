@@ -52,7 +52,7 @@ export function Guestbook() {
   }
 
   return (
-    <section className="border-b border-border py-24">
+    <section id="guestbook" className="border-b border-border py-24">
       <div ref={ref} className="container-editorial grid gap-12 md:grid-cols-2 md:gap-16">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
