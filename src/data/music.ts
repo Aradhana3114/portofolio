@@ -27,7 +27,7 @@ export const playlist: Track[] = [
     id: "about-you",
     title: "About You",
     artist: "The 1975",
-    url: "https://music.youtube.com/watch?v=tGv7CUutzqU&si=tZeMofWTZaXWB5_v",
+    url: "https://music.youtube.com/watch?v=tGv7CUutzqU&si=N3QHbQM3D_OIDLMB",
   },
   {
     id: "i-lay-my-love-on-you",
