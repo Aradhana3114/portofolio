@@ -66,8 +66,8 @@ export function Navbar() {
         className={
           "relative mx-auto flex h-14 w-full max-w-6xl items-center justify-between rounded-full border px-3 transition-all duration-300 sm:h-16 sm:px-5 " +
           (scrolled
-            ? "border-border bg-background/95 shadow-lg shadow-black/10 backdrop-blur-xl"
-            : "border-border bg-background/90 shadow-md shadow-black/10 backdrop-blur-xl")
+            ? "border-foreground/20 bg-background/95 shadow-xl shadow-black/20 backdrop-blur-xl"
+            : "border-foreground/20 bg-background/95 shadow-lg shadow-black/20 backdrop-blur-xl")
         }
       >
         {/* Logo */}

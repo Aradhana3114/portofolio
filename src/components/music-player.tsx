@@ -434,7 +434,7 @@ export function MusicPlayer() {
         )}
       </AnimatePresence>
 
-      <div className="relative flex items-center gap-2 rounded-full border border-border bg-background/90 px-3 py-2 shadow-lg shadow-black/5 backdrop-blur-xl sm:gap-3 sm:px-4">
+      <div className="relative flex items-center gap-2 rounded-full border border-foreground/20 bg-background/95 px-3 py-2 shadow-lg shadow-black/20 backdrop-blur-xl sm:gap-3 sm:px-4">
         <span className="hidden text-[10px] font-semibold uppercase tracking-[0.25em] text-accent-secondary sm:block">
           {t("music.label")}
         </span>
