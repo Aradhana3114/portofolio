@@ -19,6 +19,7 @@ const config: Config = {
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
         body: ["var(--font-body)", "sans-serif"],
+        asimovian: ["var(--font-asimovian)", "sans-serif"],
       },
       fontSize: {
         display: ["72px", { lineHeight: "80px", letterSpacing: "-0.02em" }],

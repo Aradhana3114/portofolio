@@ -15,7 +15,7 @@ export function Hero() {
   const firstName = profile.name.split(" ")[0].toUpperCase();
   const lastName = profile.name.split(" ").slice(1).join(" ").toUpperCase();
   const headingClass =
-    "font-display block overflow-hidden text-[clamp(2rem,8vw,6rem)] font-bold leading-[0.9] tracking-tight";
+    "font-asimovian block overflow-hidden text-[clamp(1.75rem,7vw,5rem)] font-bold leading-[0.95] tracking-tight";
   const lastNameDelay = firstName.length * STAGGER;
   const [ready, setReady] = useState(false);
 
@@ -32,9 +32,9 @@ export function Hero() {
   return (
     <section
       id="home"
-      className="relative flex min-h-screen items-center justify-center overflow-hidden pb-24 pt-16 sm:pb-20"
+      className="relative flex min-h-svh items-center justify-center overflow-hidden px-0 pt-32 pb-24 sm:pt-36 sm:pb-28"
     >
-      <div className="container-editorial relative z-10 py-8 text-center">
+      <div className="container-editorial relative z-10 text-center">
         {/* Status Badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

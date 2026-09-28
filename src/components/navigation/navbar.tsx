@@ -23,6 +23,7 @@ export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { scrollY } = useScroll();
+  const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { theme, toggle } = useTheme();
   const [langOpen, setLangOpen] = useState(false);
@@ -38,6 +39,8 @@ export function Navbar() {
   ];
 
   useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious() ?? 0;
+    setHidden(latest > previous && latest > 120);
     setScrolled(latest > 20);
   });
 
@@ -60,6 +63,8 @@ export function Navbar() {
 
   return (
     <motion.header
+      animate={{ y: hidden ? -120 : 0 }}
+      transition={{ duration: 0.65, ease: [0.65, 0, 0.35, 1] }}
       className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4"
     >
       <div

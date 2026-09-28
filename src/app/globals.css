@@ -1,8 +1,11 @@
+@import url("https://fonts.googleapis.com/css2?family=Asimovian&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
+  --font-asimovian: "Asimovian", sans-serif;
   --background: 255 255 255;
   --foreground: 0 0 0;
   --muted: 245 245 245;
