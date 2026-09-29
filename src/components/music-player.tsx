@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ListMusic, Pause, Play, SkipBack, SkipForward, Volume2, VolumeX, X } from "lucide-react";
 import { getYouTubeId, playlist } from "@/data/music";
@@ -71,6 +72,12 @@ const AUTOPLAY_KEY = "music-autoplay";
 const INDEX_KEY = "music-index";
 
 export function MusicPlayer() {
+  const pathname = usePathname();
+  if (pathname?.split("/").includes("admin")) return null;
+  return <MusicPlayerInner />;
+}
+
+function MusicPlayerInner() {
   const t = useTranslations();
   const audioRef = useRef<HTMLAudioElement>(null);
   const titleRef = useRef<HTMLSpanElement>(null);

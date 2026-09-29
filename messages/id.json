@@ -229,7 +229,7 @@
     "passcodePlaceholder": "Passcode",
     "invalidPasscode": "Passcode salah.",
     "misconfiguredTitle": "Admin belum dikonfigurasi",
-    "misconfiguredBody": "Set ADMIN_PASSCODE dan SUPABASE_SERVICE_ROLE_KEY di environment server, lalu restart dev server.",
+    "misconfiguredBody": "Set ADMIN_PASSCODE dan SUPABASE_SERVICE_ROLE_KEY di environment server. Secara lokal itu berarti .env.local lalu restart dev server; di Vercel berarti Project Settings > Environment Variables, lalu redeploy.",
     "misconfiguredHint": "Variable yang belum terisi:",
     "empty": "Belum ada pesan.",
     "replied": "Sudah dibalas",

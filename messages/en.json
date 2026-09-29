@@ -229,7 +229,7 @@
     "passcodePlaceholder": "Passcode",
     "invalidPasscode": "Wrong passcode.",
     "misconfiguredTitle": "Admin is not configured",
-    "misconfiguredBody": "Set ADMIN_PASSCODE and SUPABASE_SERVICE_ROLE_KEY in the server environment, then restart the dev server.",
+    "misconfiguredBody": "Set ADMIN_PASSCODE and SUPABASE_SERVICE_ROLE_KEY in the server environment. Locally that means .env.local plus a dev server restart; on Vercel it means Project Settings > Environment Variables, then redeploy.",
     "misconfiguredHint": "Variables that are still empty:",
     "empty": "No messages yet.",
     "replied": "Replied",
