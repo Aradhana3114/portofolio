@@ -217,5 +217,31 @@
       "organization": "Vocational School",
       "description": "Began studying Software & Game Development, with an initial focus on web development."
     }
+  },
+  "admin": {
+    "title": "Guestbook Admin",
+    "subtitle": "Reply, edit or delete incoming messages. This page is not linked from the navigation.",
+    "checking": "Checking...",
+    "unlock": "Unlock",
+    "lock": "Lock",
+    "refresh": "Refresh",
+    "prompt": "Enter the admin passcode to continue.",
+    "passcodePlaceholder": "Passcode",
+    "invalidPasscode": "Wrong passcode.",
+    "misconfiguredTitle": "Admin is not configured",
+    "misconfiguredBody": "Set ADMIN_PASSCODE and SUPABASE_SERVICE_ROLE_KEY in the server environment, then restart the dev server.",
+    "misconfiguredHint": "Variables that are still empty:",
+    "empty": "No messages yet.",
+    "replied": "Replied",
+    "pending": "Pending",
+    "reply": "Reply",
+    "replyPlaceholder": "Write your reply here...",
+    "addAnother": "Add another reply",
+    "editReply": "Edit reply",
+    "deleteReply": "Delete reply",
+    "deleteEntry": "Delete message",
+    "confirmDeleteEntry": "Delete the message from \"{name}\" and all of its replies? This cannot be undone.",
+    "save": "Save",
+    "cancel": "Cancel"
   }
 }

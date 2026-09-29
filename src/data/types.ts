@@ -49,3 +49,21 @@ export interface GuestbookEntry {
   message: string;
   created_at: string;
 }
+
+export interface GuestbookReply {
+  id: string;
+  entry_id: string;
+  reply: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Public shape: an entry plus at most one owner reply, nested for rendering. */
+export interface GuestbookEntryWithReply extends GuestbookEntry {
+  reply: GuestbookReply | null;
+}
+
+/** Admin shape: every entry with all its replies, plus unread-first ordering. */
+export interface AdminGuestbookEntry extends GuestbookEntry {
+  replies: GuestbookReply[];
+}

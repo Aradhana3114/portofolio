@@ -3,15 +3,20 @@
 import { useTranslations } from "next-intl";
 import { FormEvent, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { GuestbookEntry } from "@/data/types";
+import { GuestbookEntryWithReply } from "@/data/types";
 import { Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useIntersection } from "@/hooks/use-intersection";
+import { profile } from "@/data/profile";
+
+// Author label is fixed, never taken from input, so nobody can impersonate the
+// owner through the guestbook form.
+const OWNER_LABEL = profile.name.split(" ")[0];
 
 export function Guestbook() {
   const t = useTranslations();
   const { ref, isVisible } = useIntersection<HTMLDivElement>();
-  const [entries, setEntries] = useState<GuestbookEntry[]>([]);
+  const [entries, setEntries] = useState<GuestbookEntryWithReply[]>([]);
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
@@ -98,13 +103,27 @@ export function Guestbook() {
           )}
           {entries.map((entry) => (
             <div key={entry.id} className="border-b border-border/60 pb-4">
-              <div className="mb-1 flex items-center justify-between">
+              <div className="mb-1 flex items-center justify-between gap-4">
                 <span className="text-body font-medium">{entry.name}</span>
-                <span className="text-metadata text-foreground/40">
+                <span className="shrink-0 text-metadata text-foreground/40">
                   {new Date(entry.created_at).toLocaleDateString()}
                 </span>
               </div>
               <p className="text-body text-foreground/70">{entry.message}</p>
+
+              {entry.reply && (
+                <div className="mt-3 border-l-2 border-accent-secondary/40 pl-4">
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="text-caption font-semibold uppercase tracking-widest text-accent-secondary">
+                      {OWNER_LABEL}
+                    </span>
+                    <span className="text-metadata text-foreground/40">
+                      {new Date(entry.reply.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-body text-foreground/80">{entry.reply.reply}</p>
+                </div>
+              )}
             </div>
           ))}
         </motion.div>

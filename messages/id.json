@@ -217,5 +217,31 @@
       "organization": "SMK",
       "description": "Memulai jurusan Pengembangan Perangkat Lunak dan Gim, fokus awal di web development."
     }
+  },
+  "admin": {
+    "title": "Kelola Buku Tamu",
+    "subtitle": "Balas, ubah, atau hapus pesan yang masuk. Halaman ini tidak ditampilkan di navigasi.",
+    "checking": "Memeriksa...",
+    "unlock": "Buka",
+    "lock": "Kunci",
+    "refresh": "Muat ulang",
+    "prompt": "Masukkan passcode admin untuk melanjutkan.",
+    "passcodePlaceholder": "Passcode",
+    "invalidPasscode": "Passcode salah.",
+    "misconfiguredTitle": "Admin belum dikonfigurasi",
+    "misconfiguredBody": "Set ADMIN_PASSCODE dan SUPABASE_SERVICE_ROLE_KEY di environment server, lalu restart dev server.",
+    "misconfiguredHint": "Variable yang belum terisi:",
+    "empty": "Belum ada pesan.",
+    "replied": "Sudah dibalas",
+    "pending": "Belum dibalas",
+    "reply": "Balas",
+    "replyPlaceholder": "Tulis balasanmu di sini...",
+    "addAnother": "Tambah balasan lagi",
+    "editReply": "Ubah balasan",
+    "deleteReply": "Hapus balasan",
+    "deleteEntry": "Hapus pesan",
+    "confirmDeleteEntry": "Hapus pesan dari \"{name}\" beserta semua balasannya? Tindakan ini tidak bisa dibatalkan.",
+    "save": "Simpan",
+    "cancel": "Batal"
   }
 }

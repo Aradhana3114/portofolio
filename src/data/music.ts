@@ -59,5 +59,11 @@ export const playlist: Track[] = [
     artist: "One Direction",
     url: "https://music.youtube.com/watch?v=8BiLurrzFRw&si=XdCUa1wqqMuvmHn8",
   },
+  {
+    id: "young-dumb-&-broke",
+    title: "Young Dumb & Broke",
+    artist: "Khalid ",
+    url: "https://music.youtube.com/watch?v=YhK2NwPIdt4&si=D1j5RF3u48nfbO3c",
+  },
 ];
 
