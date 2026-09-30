@@ -4,43 +4,18 @@
 
    ▲ Next.js 15.5.25
    - Local:        http://localhost:3000
-   - Network:      http://192.168.1.7:3000
+   - Network:      http://192.168.1.8:3000
    - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 4.2s
- ✓ Compiled /middleware in 449ms (136 modules)
+ ✓ Ready in 6.1s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1802ms (136 modules)
  ○ Compiling /[locale] ...
- ✓ Compiled /[locale] in 10.8s (1607 modules)
- GET /id 200 in 15538ms
- GET /id 200 in 1544ms
+ ✓ Compiled /[locale] in 21.8s (1625 modules)
+ GET /id 200 in 29298ms
+ GET /id 200 in 3139ms
  ○ Compiling /api/guestbook ...
- ✓ Compiled /api/guestbook in 5.7s (1668 modules)
- ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- GET /api/guestbook 200 in 6937ms
- GET /id 200 in 1909ms
- GET /id 200 in 2292ms
- GET /api/guestbook 200 in 219ms
- GET /id 200 in 570ms
- GET /api/guestbook 200 in 822ms
- ✓ Compiled in 5.2s (1607 modules)
- ✓ Compiled in 3.3s (1607 modules)
- ✓ Compiled in 1108ms (1607 modules)
- ✓ Compiled in 2.5s (1607 modules)
- ✓ Compiled in 1180ms (1607 modules)
- GET /id 200 in 3003ms
- ○ Compiling /api/guestbook ...
- ✓ Compiled /api/guestbook in 1482ms (971 modules)
- GET /api/guestbook 200 in 3469ms
- GET /id 200 in 2607ms
- GET /api/guestbook 200 in 1271ms
- ✓ Compiled in 2.1s (1668 modules)
- GET /id 200 in 1572ms
- ○ Compiling /_not-found ...
- ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ✓ Compiled /_not-found in 2.2s (1659 modules)
- GET /api/guestbook 404 in 4757ms
- GET /id 200 in 3426ms
- GET /api/guestbook 200 in 1191ms
- ✓ Compiled in 1838ms (1607 modules)
-^C
+ ✓ Compiled /api/guestbook in 21.8s (1668 modules)
+ GET /id 200 in 2318ms
+ GET /api/guestbook 200 in 359ms

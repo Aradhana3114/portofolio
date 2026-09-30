@@ -2,7 +2,7 @@ export const socials = {
   whatsapp: "085123365286",
   instagram: "arazyizhere",
   github: "Aradhana3114",
-  linkedin: "aradhana-miftah-900492438",
+  linkedin: "aradhana-miftah-hermawan",
 };
 
 export const whatsappLink = (message = "Hi, I'm interested in working with you") =>
