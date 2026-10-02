@@ -14,7 +14,7 @@ export const techStack: TechStack[] = [
     categoryKey: "categories.backend",
     items: [
       { name: "Node.js", level: "intermediate" },
-      { name: "Supabase", level: "intermediate" },
+      { name: "Supabase", level: "proficient" },
       { name: "REST API", level: "proficient" },
     ],
   },
