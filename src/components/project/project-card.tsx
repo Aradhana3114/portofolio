@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Project } from "@/data/types";
 import { ExternalLink, ArrowUpRight } from "lucide-react";
 
-export function ProjectCard({ project, index }: { project: Project; index: number }) {
+export function ProjectCard({ project }: { project: Project }) {
   const t = useTranslations();
 
   return (

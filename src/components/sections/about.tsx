@@ -6,7 +6,7 @@ import { profile } from "@/data/profile";
 import { techStack, skillCategories } from "@/data/skills";
 import { useLocale } from "next-intl";
 import { useIntersection } from "@/hooks/use-intersection";
-import { Download, GraduationCap } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import { FluidReveal } from "@/components/ui/fluid-reveal";
 
 export function About() {

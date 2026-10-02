@@ -303,9 +303,11 @@ const PARAMS = {
   mouseForce: 48,
   dissipation: 0.968,
   threshold: 0.11,
-  resolution: 0.18,
-  iters: 5,
+  resolution: 0.12,
+  iters: 3,
   dt: 0.016,
+  maxDpr: 1,
+  frameInterval: 25,
 };
 
 export function FluidReveal({
@@ -481,14 +483,10 @@ export function FluidReveal({
       gl!.pixelStorei(gl!.UNPACK_FLIP_Y_WEBGL, true);
       gl!.pixelStorei(gl!.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
       gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGBA, gl!.RGBA, gl!.UNSIGNED_BYTE, c);
-      gl!.generateMipmap(gl!.TEXTURE_2D);
-      gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.LINEAR_MIPMAP_LINEAR);
+      gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.LINEAR);
       gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MAG_FILTER, gl!.LINEAR);
-      const aniso = gl!.getExtension("EXT_texture_filter_anisotropic");
-      if (aniso) {
-        const maxAniso = gl!.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number;
-        gl!.texParameterf(gl!.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxAniso));
-      }
+      gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_WRAP_S, gl!.CLAMP_TO_EDGE);
+      gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_WRAP_T, gl!.CLAMP_TO_EDGE);
       gl!.pixelStorei(gl!.UNPACK_FLIP_Y_WEBGL, false);
       target.aspect = w / h;
     }
@@ -515,7 +513,7 @@ export function FluidReveal({
     function initSim() {
       const rect = container!.getBoundingClientRect();
       if (rect.width < 4 || rect.height < 4) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const dpr = Math.min(window.devicePixelRatio || 1, PARAMS.maxDpr);
       const w = Math.max(2, Math.floor(rect.width * dpr));
       const h = Math.max(2, Math.floor(rect.height * dpr));
       const nextSimW = Math.max(32, Math.round(rect.width * PARAMS.resolution));
@@ -584,6 +582,26 @@ export function FluidReveal({
     let last = performance.now();
     let inView = true;
     let pageHidden = false;
+    let fading = false;
+    let lastActive = performance.now();
+    let rectCache: DOMRect | null = null;
+    let rectRaf = 0;
+    const IDLE_STOP_MS = 900;
+
+    function refreshRect() {
+      rectRaf = 0;
+      rectCache = canvas!.getBoundingClientRect();
+    }
+
+    function scheduleRectRefresh() {
+      if (rectRaf) return;
+      rectRaf = requestAnimationFrame(refreshRect);
+    }
+
+    function wake() {
+      lastActive = performance.now();
+      if (inView && !pageHidden) startLoop();
+    }
 
     function startLoop() {
       if (raf || disposed) return;
@@ -655,8 +673,13 @@ export function FluidReveal({
 
       let diss = PARAMS.dissipation;
       if (clearBoost > 0) {
-        diss = Math.pow(PARAMS.dissipation, 3.5);
-        clearBoost = Math.max(0, clearBoost - dt * 2.5);
+        diss = Math.pow(PARAMS.dissipation, 4.5);
+        clearBoost = Math.max(0, clearBoost - dt * 1.6);
+        if (clearBoost <= 0) {
+          fading = false;
+          splats.length = 0;
+          clearFluid();
+        }
       }
 
       gl!.useProgram(progAdvect.p);
@@ -737,13 +760,15 @@ export function FluidReveal({
     }
 
     function clientToUv(clientX: number, clientY: number) {
-      const rect = canvas!.getBoundingClientRect();
+      const rect = rectCache ?? canvas!.getBoundingClientRect();
       const px = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
       const py = Math.min(1, Math.max(0, 1 - (clientY - rect.top) / rect.height));
       return { px, py };
     }
 
     function setPointer(e: PointerEvent) {
+      wake();
+      fading = false;
       const { px, py } = clientToUv(e.clientX, e.clientY);
       const dx = px - lastX;
       const dy = py - lastY;
@@ -759,6 +784,8 @@ export function FluidReveal({
     }
 
     function onPointerDown(e: PointerEvent) {
+      wake();
+      fading = false;
       const { px, py } = clientToUv(e.clientX, e.clientY);
       e0Type = e.pointerType || "";
       lastX = px;
@@ -777,7 +804,10 @@ export function FluidReveal({
     }
 
     function onPointerEnter(e: PointerEvent) {
+      wake();
+      refreshRect();
       inside = true;
+      fading = false;
       clearBoost = 0;
       window.clearTimeout(leaveTimer);
       lastMove = performance.now();
@@ -791,20 +821,24 @@ export function FluidReveal({
       if (e0Type === "mouse") {
         scheduleFade();
       } else {
+        fading = true;
+        lastActive = performance.now();
         window.clearTimeout(leaveTimer);
         leaveTimer = window.setTimeout(() => {
           if (!inside) clearBoost = 1;
-        }, 700);
+        }, 250);
       }
     }
 
     function scheduleFade() {
       lastMove = performance.now();
+      lastActive = performance.now();
       window.clearTimeout(leaveTimer);
       if (!propsRef.current.fadeOnLeave) return;
+      fading = true;
       leaveTimer = window.setTimeout(() => {
         if (!inside) clearBoost = 1;
-      }, 700);
+      }, 250);
     }
 
     function onPointerUp() {
@@ -826,6 +860,7 @@ export function FluidReveal({
     }
 
     function onTouchStart(e: TouchEvent) {
+      wake();
       const t = e.touches[0];
       if (!t) return;
       const { px, py } = clientToUv(t.clientX, t.clientY);
@@ -870,6 +905,11 @@ export function FluidReveal({
     function frame(now: number) {
       raf = 0;
       if (disposed) return;
+      if (!inside && !fading && now - lastActive > IDLE_STOP_MS) return;
+      if (now - last < PARAMS.frameInterval) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
       const dt = Math.min((now - last) / 1000, 0.033);
       last = now;
       idleSplats(dt);
@@ -890,15 +930,31 @@ export function FluidReveal({
     evTarget.addEventListener("touchend", onTouchEnd, { capture: true });
     evTarget.addEventListener("touchcancel", onTouchEnd, { capture: true });
     window.addEventListener("blur", onPointerLeave);
+    window.addEventListener("scroll", scheduleRectRefresh, { passive: true });
+    window.addEventListener("resize", scheduleRectRefresh, { passive: true });
 
-    const ro = new ResizeObserver(() => onResize());
+    const ro = new ResizeObserver(() => {
+      onResize();
+      refreshRect();
+    });
     ro.observe(container);
 
     const io = new IntersectionObserver(
       ([entry]) => {
         inView = entry.isIntersecting;
         if (inView && !pageHidden) startLoop();
-        else stopLoop();
+        else {
+          stopLoop();
+          if (!inView) {
+            fading = false;
+            clearBoost = 0;
+            if (dye && velocity && pressure) {
+              splats.length = 0;
+              clearFluid();
+              render();
+            }
+          }
+        }
       },
       { rootMargin: "120px" }
     );
@@ -932,14 +988,18 @@ export function FluidReveal({
         setGlReady(false);
       });
 
+    refreshRect();
     startLoop();
 
     return () => {
       disposed = true;
       stopLoop();
+      if (rectRaf) cancelAnimationFrame(rectRaf);
       window.clearTimeout(leaveTimer);
       ro.disconnect();
       io.disconnect();
+      window.removeEventListener("scroll", scheduleRectRefresh);
+      window.removeEventListener("resize", scheduleRectRefresh);
       document.removeEventListener("visibilitychange", onVisibility);
       evTarget.removeEventListener("pointerdown", onPointerDown, { capture: true });
       evTarget.removeEventListener("pointermove", setPointer, { capture: true });

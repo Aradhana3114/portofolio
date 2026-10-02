@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Asimovian&display=swap");
+﻿@import url("https://fonts.googleapis.com/css2?family=Asimovian&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -55,33 +55,6 @@ body {
   color: rgb(var(--foreground));
   font-feature-settings: "ss01" on, "ss02" on;
   overflow-x: hidden;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes gradient-shift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient-shift 8s ease infinite;
 }
 
 @keyframes marquee {
@@ -161,6 +134,58 @@ body {
   }
 }
 
+@keyframes letter-wave {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.09em);
+  }
+}
+
+.split-loop-active .split-char-loop {
+  animation: letter-wave 1.8s ease-in-out infinite;
+}
+
+@property --shine-x {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: -60vw;
+}
+
+.split-char-shine {
+  color: transparent;
+  background-image: linear-gradient(
+    105deg,
+    rgb(var(--foreground)) 0,
+    rgb(var(--foreground)) calc(var(--shine-x) - 150px),
+    rgb(var(--foreground) / 0.25) var(--shine-x),
+    rgb(var(--foreground) / 0.25) calc(var(--shine-x) + 70px),
+    rgb(var(--foreground)) calc(var(--shine-x) + 220px),
+    rgb(var(--foreground)) 100%
+  );
+  background-attachment: fixed;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+@keyframes shine-sweep {
+  0% {
+    --shine-x: 130vw;
+  }
+  22% {
+    --shine-x: -60vw;
+  }
+  100% {
+    --shine-x: -60vw;
+  }
+}
+
+.split-loop-active .split-char-shine {
+  animation: shine-sweep 7s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -171,6 +196,16 @@ body {
 
   .animate-marquee {
     animation-duration: var(--marquee-duration, 20s) !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  .split-loop-active .split-char-loop {
+    animation-duration: 6s !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  .split-loop-active .split-char-shine {
+    animation-duration: 30s !important;
     animation-iteration-count: infinite !important;
   }
 }

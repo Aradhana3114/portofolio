@@ -35,7 +35,7 @@ export function Works() {
               animate={isVisible ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <ProjectCard project={project} index={i} />
+              <ProjectCard project={project} />
             </motion.div>
           ))}
         </div>

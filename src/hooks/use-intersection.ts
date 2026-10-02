@@ -15,7 +15,7 @@ export function useIntersection<T extends HTMLElement>(options?: IntersectionObs
         setIsVisible(true);
         observer.disconnect();
       }
-    }, { threshold: 0.15, ...options });
+    }, { threshold: 0.05, ...options });
 
     observer.observe(node);
     return () => observer.disconnect();

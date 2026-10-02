@@ -20,8 +20,6 @@ export function Hero() {
   const [ready, setReady] = useState(false);
 
   const { scrollY } = useScroll();
-  const blobAY = useTransform(scrollY, [0, 700], [0, 140]);
-  const blobBY = useTransform(scrollY, [0, 700], [0, -90]);
   const contentY = useTransform(scrollY, [0, 700], [0, 70]);
   const contentOpacity = useTransform(scrollY, [0, 420], [1, 0]);
 
@@ -117,8 +115,8 @@ export function Hero() {
 
       {/* Background Decoration */}
       <div className="absolute inset-0 -z-10">
-        <motion.div style={{ y: blobAY }} className="absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-accent-secondary/5 blur-3xl"></motion.div>
-        <motion.div style={{ y: blobBY }} className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-accent/5 blur-3xl"></motion.div>
+        <div className="absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-accent-secondary/5 blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-accent/5 blur-3xl"></div>
       </div>
     </section>
   );
