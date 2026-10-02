@@ -582,6 +582,20 @@ export function FluidReveal({
     let e0Type = "";
     let raf = 0;
     let last = performance.now();
+    let inView = true;
+    let pageHidden = false;
+
+    function startLoop() {
+      if (raf || disposed) return;
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+    }
+
+    function stopLoop() {
+      if (!raf) return;
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
 
     function queueSplat(x: number, y: number, dx: number, dy: number) {
       splats.push({ x, y, dx, dy });
@@ -854,13 +868,14 @@ export function FluidReveal({
     }
 
     function frame(now: number) {
+      raf = 0;
       if (disposed) return;
       const dt = Math.min((now - last) / 1000, 0.033);
       last = now;
       idleSplats(dt);
       stepFluid(PARAMS.dt);
       render();
-      raf = requestAnimationFrame(frame);
+      startLoop();
     }
 
     const evTarget: HTMLElement = container;
@@ -878,6 +893,23 @@ export function FluidReveal({
 
     const ro = new ResizeObserver(() => onResize());
     ro.observe(container);
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        if (inView && !pageHidden) startLoop();
+        else stopLoop();
+      },
+      { rootMargin: "120px" }
+    );
+    io.observe(container);
+
+    function onVisibility() {
+      pageHidden = document.hidden;
+      if (pageHidden) stopLoop();
+      else if (inView) startLoop();
+    }
+    document.addEventListener("visibilitychange", onVisibility);
 
     function onContextLost(e: Event) {
       e.preventDefault();
@@ -900,13 +932,15 @@ export function FluidReveal({
         setGlReady(false);
       });
 
-    raf = requestAnimationFrame(frame);
+    startLoop();
 
     return () => {
       disposed = true;
-      cancelAnimationFrame(raf);
+      stopLoop();
       window.clearTimeout(leaveTimer);
       ro.disconnect();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
       evTarget.removeEventListener("pointerdown", onPointerDown, { capture: true });
       evTarget.removeEventListener("pointermove", setPointer, { capture: true });
       evTarget.removeEventListener("pointerenter", onPointerEnter, { capture: true });
