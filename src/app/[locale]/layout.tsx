@@ -6,6 +6,8 @@ import { routing } from "@/i18n/routing";
 import { Familjen_Grotesk, Inter } from "next/font/google";
 import type { Metadata } from "next";
 import { MusicPlayer } from "@/components/music-player";
+import { Providers } from "@/components/providers";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
 import "../globals.css";
 
 const displayFont = Familjen_Grotesk({
@@ -51,8 +53,11 @@ export default async function LocaleLayout({
       <html lang={locale} className={`${displayFont.variable} ${bodyFont.variable}`} suppressHydrationWarning>
       <body className="font-body antialiased">
         <NextIntlClientProvider messages={messages}>
-          {children}
-          <MusicPlayer />
+          <Providers>
+            <ScrollProgress />
+            {children}
+            <MusicPlayer />
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

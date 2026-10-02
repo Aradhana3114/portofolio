@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { profile } from "@/data/profile";
 import { Button } from "@/components/ui/button";
 import { SplitText } from "@/components/ui/split-text";
@@ -19,6 +19,12 @@ export function Hero() {
   const lastNameDelay = firstName.length * STAGGER;
   const [ready, setReady] = useState(false);
 
+  const { scrollY } = useScroll();
+  const blobAY = useTransform(scrollY, [0, 700], [0, 140]);
+  const blobBY = useTransform(scrollY, [0, 700], [0, -90]);
+  const contentY = useTransform(scrollY, [0, 700], [0, 70]);
+  const contentOpacity = useTransform(scrollY, [0, 420], [1, 0]);
+
   useEffect(() => {
     const onSplashDone = () => setReady(true);
     window.addEventListener("splash:done", onSplashDone);
@@ -34,7 +40,10 @@ export function Hero() {
       id="home"
       className="relative flex min-h-svh items-center justify-center overflow-hidden px-0 pt-32 pb-24 sm:pt-36 sm:pb-28"
     >
-      <div className="container-editorial relative z-10 text-center">
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="container-editorial relative z-10 text-center"
+      >
         {/* Status Badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -104,12 +113,12 @@ export function Hero() {
             <ArrowDown size={24} />
           </motion.a>
         </motion.div>
-      </div>
+      </motion.div>
 
       {/* Background Decoration */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-accent-secondary/5 blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-accent/5 blur-3xl"></div>
+        <motion.div style={{ y: blobAY }} className="absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-accent-secondary/5 blur-3xl"></motion.div>
+        <motion.div style={{ y: blobBY }} className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-accent/5 blur-3xl"></motion.div>
       </div>
     </section>
   );

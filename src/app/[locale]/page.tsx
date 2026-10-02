@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { Navbar } from "@/components/navigation/navbar";
 import { Hero } from "@/components/sections/hero";
+import { Marquee } from "@/components/sections/marquee";
 import { About } from "@/components/sections/about";
 import { Works } from "@/components/sections/works";
 import { TechStack } from "@/components/sections/tech-stack";
@@ -29,6 +30,7 @@ export default async function Home({
         <Navbar />
         <main>
           <Hero />
+          <Marquee />
           <About />
           <Works />
           <TechStack />
