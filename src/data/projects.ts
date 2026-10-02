@@ -74,7 +74,7 @@ export const projects: Project[] = [
     year: "2026",
     categoryKey: "projects.russRental.category",
     featured: true,
-    technologies: ["Laravel 5", "Filament", "PHP", "MySQL"],
+    technologies: ["Laravel 13", "Filament 5", "PHP 8.3", "MySQL"],
     image: "/images/projects/russ-rental.png",
     imageAspect: "1896 / 900",
     gallery: ["/images/projects/russ-rental.png"],

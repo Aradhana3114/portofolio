@@ -1,22 +1,32 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function SplashScreen() {
   const t = useTranslations();
   const text = t("splash.greeting");
   const [isVisible, setIsVisible] = useState(false);
+  const startedRef = useRef(false);
 
   useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+
+    const w = window as typeof window & { __splashDone?: boolean };
+    const finish = () => {
+      w.__splashDone = true;
+      w.dispatchEvent(new Event("splash:done"));
+    };
+
     let seen = false;
     try {
       seen = sessionStorage.getItem("splash:seen") === "1";
     } catch {}
 
     if (seen) {
-      window.dispatchEvent(new Event("splash:done"));
+      finish();
       return;
     }
 
@@ -25,12 +35,8 @@ export function SplashScreen() {
     } catch {}
 
     setIsVisible(true);
-    const hide = setTimeout(() => setIsVisible(false), 3000);
-    const done = setTimeout(() => window.dispatchEvent(new Event("splash:done")), 3450);
-    return () => {
-      clearTimeout(hide);
-      clearTimeout(done);
-    };
+    setTimeout(() => setIsVisible(false), 3000);
+    setTimeout(finish, 3450);
   }, []);
 
   return (

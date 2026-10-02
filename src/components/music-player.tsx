@@ -107,6 +107,24 @@ function MusicPlayerInner() {
     setPlaying(value);
   };
 
+  const rememberAutoplay = (value: boolean) => {
+    try {
+      localStorage.setItem(AUTOPLAY_KEY, value ? "1" : "0");
+    } catch {}
+  };
+
+  const startPlayback = () => {
+    rememberAutoplay(true);
+    setPlayState(true);
+  };
+
+  const togglePlayback = () => {
+    if (!track) return;
+    const next = !playingRef.current;
+    rememberAutoplay(next);
+    setPlayState(next);
+  };
+
   useEffect(() => {
     indexRef.current = index;
   }, [index]);
@@ -114,7 +132,6 @@ function MusicPlayerInner() {
   useEffect(() => {
     if (!playing) return;
     try {
-      localStorage.setItem(AUTOPLAY_KEY, "1");
       localStorage.setItem(INDEX_KEY, String(index));
     } catch {}
   }, [playing, index]);
@@ -248,7 +265,7 @@ function MusicPlayerInner() {
 
   const skip = (delta: number) => {
     if (!track) return;
-    setPlayState(true);
+    startPlayback();
     goTo(index + delta);
   };
 
@@ -301,7 +318,9 @@ function MusicPlayerInner() {
 
       if (event.code === "Space") {
         event.preventDefault();
-        setPlayState(!playingRef.current);
+        const next = !playingRef.current;
+        rememberAutoplay(next);
+        setPlayState(next);
         return;
       }
       if (event.code === "KeyA") {
@@ -314,7 +333,7 @@ function MusicPlayerInner() {
       }
       if (event.code === "KeyD" || event.code === "KeyS") {
         const delta = event.code === "KeyD" ? 1 : -1;
-        setPlayState(true);
+        startPlayback();
         setIndex((prev) => (prev + delta + playlist.length) % playlist.length);
       }
     };
@@ -402,7 +421,7 @@ function MusicPlayerInner() {
                   <button
                     onClick={() => {
                       goTo(i);
-                      setPlayState(true);
+                      startPlayback();
                       setOpen(false);
                     }}
                     aria-current={i === index}
@@ -491,7 +510,7 @@ function MusicPlayerInner() {
             <SkipBack size={16} fill="currentColor" />
           </button>
           <button
-            onClick={() => track && setPlayState(!playing)}
+            onClick={togglePlayback}
             disabled={!hasTracks}
             aria-label={playing ? t("music.pause") : t("music.play")}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-30"

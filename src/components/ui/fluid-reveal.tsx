@@ -492,6 +492,7 @@ export function FluidReveal({
     }
 
     let disposed = false;
+    let imagesUploaded = false;
     let velocity: DoubleFBO | null = null;
     let pressure: DoubleFBO | null = null;
     let dye: DoubleFBO | null = null;
@@ -766,6 +767,18 @@ export function FluidReveal({
       return { px, py };
     }
 
+    // draw the uploaded base image immediately so the canvas never shows the
+    // black placeholder; only reveal it once a real frame exists
+    function presentBase() {
+      if (disposed || !imagesUploaded) return;
+      if (!velocity || !dye) initSim();
+      if (!velocity || !dye) return;
+      lastActive = performance.now();
+      render();
+      setGlReady(true);
+      startLoop();
+    }
+
     function setPointer(e: PointerEvent) {
       wake();
       fading = false;
@@ -884,6 +897,7 @@ export function FluidReveal({
     function onResize() {
       if (disposed) return;
       initSim();
+      presentBase();
     }
 
     function idleSplats(dt: number) {
@@ -981,7 +995,8 @@ export function FluidReveal({
         if (disposed) return;
         uploadImg(baseImg, base);
         uploadImg(revealImg, rev);
-        setGlReady(true);
+        imagesUploaded = true;
+        presentBase();
       })
       .catch((err) => {
         console.error(err);

@@ -24,6 +24,11 @@ export function Hero() {
   const contentOpacity = useTransform(scrollY, [0, 420], [1, 0]);
 
   useEffect(() => {
+    const w = window as typeof window & { __splashDone?: boolean };
+    if (w.__splashDone) {
+      setReady(true);
+      return;
+    }
     const onSplashDone = () => setReady(true);
     window.addEventListener("splash:done", onSplashDone);
     const fallback = setTimeout(() => setReady(true), 4500);
@@ -64,7 +69,16 @@ export function Hero() {
 
         {/* Main Heading */}
         <div className="mb-8">
-          <SplitText as="h1" text={firstName} className={headingClass} delay={0} stagger={STAGGER} play={ready} />
+          <SplitText
+            as="h1"
+            text={firstName}
+            className={headingClass}
+            delay={0}
+            stagger={STAGGER}
+            play={ready}
+            wave={false}
+            shine={false}
+          />
           <SplitText
             as="h1"
             text={lastName}
@@ -72,6 +86,8 @@ export function Hero() {
             delay={lastNameDelay}
             stagger={STAGGER}
             play={ready}
+            wave={false}
+            shine={false}
           />
         </div>
 

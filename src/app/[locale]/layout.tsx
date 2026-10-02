@@ -52,6 +52,12 @@ export default async function LocaleLayout({
   return (
       <html lang={locale} className={`${displayFont.variable} ${bodyFont.variable}`} suppressHydrationWarning>
       <body className="font-body antialiased">
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark')}catch(e){}})();",
+          }}
+        />
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <ScrollProgress />
