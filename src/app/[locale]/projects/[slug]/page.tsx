@@ -6,7 +6,6 @@ import { Navbar } from "@/components/navigation/navbar";
 import { Footer } from "@/components/footer";
 import { ProjectDetail } from "@/components/project/project-detail";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SplashScreen } from "@/components/splash-screen";
 import { DynamicFavicon } from "@/components/dynamic-favicon";
 
 export function generateStaticParams() {
@@ -39,7 +38,6 @@ export default async function ProjectPage({
 
   return (
     <>
-      <SplashScreen />
       <ThemeProvider>
         <DynamicFavicon />
         <Navbar />

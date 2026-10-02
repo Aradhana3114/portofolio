@@ -7,9 +7,24 @@ import { motion, AnimatePresence } from "framer-motion";
 export function SplashScreen() {
   const t = useTranslations();
   const text = t("splash.greeting");
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    let seen = false;
+    try {
+      seen = sessionStorage.getItem("splash:seen") === "1";
+    } catch {}
+
+    if (seen) {
+      window.dispatchEvent(new Event("splash:done"));
+      return;
+    }
+
+    try {
+      sessionStorage.setItem("splash:seen", "1");
+    } catch {}
+
+    setIsVisible(true);
     const hide = setTimeout(() => setIsVisible(false), 3000);
     const done = setTimeout(() => window.dispatchEvent(new Event("splash:done")), 3450);
     return () => {
