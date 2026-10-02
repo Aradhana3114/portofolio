@@ -7,6 +7,8 @@ export interface Project {
   featured: boolean;
   technologies: string[];
   image: string;
+  /** width / height of `image`, so containers match the real aspect instead of cropping it. */
+  imageAspect?: string;
   gallery: string[];
   demoUrl?: string;
   githubUrl?: string;

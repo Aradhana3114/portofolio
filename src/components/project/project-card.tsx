@@ -12,15 +12,16 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
   return (
     <div className="group grid gap-8 lg:grid-cols-2 lg:gap-12">
       {/* Project Image */}
-      <div className="relative order-2 overflow-hidden rounded-2xl border-2 border-border bg-muted lg:order-1">
-        <div className="aspect-[4/3]">
-          <Image
-            src={project.image}
-            alt={t(project.titleKey)}
-            fill
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-          />
-        </div>
+      <div
+        className="relative order-2 aspect-[4/3] self-start overflow-hidden rounded-2xl border-2 border-border bg-muted lg:order-1"
+        style={project.imageAspect ? { aspectRatio: project.imageAspect } : undefined}
+      >
+        <Image
+          src={project.image}
+          alt={t(project.titleKey)}
+          fill
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+        />
         {project.demoUrl && (
           <a
             href={project.demoUrl}

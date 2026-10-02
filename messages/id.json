@@ -134,7 +134,14 @@
   },
   "notFound": {
     "title": "Halaman Tidak Ditemukan",
-    "description": "Halaman yang kamu cari tidak ada atau sudah dipindahkan."
+    "description": "Halaman yang kamu cari tidak ada atau sudah dipindahkan.",
+    "headline": "Boo! Halaman hilang!",
+    "cta": "Cari perlindungan",
+    "explain": {
+      "trigger": "Apa arti 404?",
+      "title": "Kenapa 404?",
+      "body": "404 adalah kode status HTTP yang artinya server tidak menemukan halaman yang kamu minta. Penyebab paling umum: alamatnya salah ketik, halamannya sudah dihapus, atau tautannya sudah berubah."
+    }
   },
   "error": {
     "title": "Terjadi Kesalahan",
@@ -182,6 +189,17 @@
       "features": ["Filter produk", "Keranjang belanja lokal", "Halaman detail produk"],
       "challenges": ["Mengelola state keranjang tanpa library tambahan"],
       "result": "Pemahaman lebih kuat soal component composition dan props drilling."
+    },
+    "russRental": {
+      "title": "Russ Rental — Website Rental Mobil",
+      "description": "Website rental mobil dengan katalog armada, form booking, dan panel admin berbasis Filament.",
+      "category": "Aplikasi Web",
+      "overview": "Russ Rental adalah bisnis rental mobil yang butuh presence web untuk menampilkan armada, menjelaskan layanan, dan menerima permintaan booking dari calon pelanggan secara langsung.",
+      "problem": "Rental mobil selama ini hanya mengandalkan enquiries lewat WhatsApp. Tidak ada katalog armada yang bisa dibagikan, dan calon pelanggan harus chat dulu sebelum bisa lihat pilihan mobil.",
+      "solution": "Website company profile dengan halaman layanan, katalog armada, form booking yang terhubung ke WhatsApp, serta panel admin Filament untuk mengelola armada dan permintaan.",
+      "features": ["Katalog armada mobil", "Form booking ke WhatsApp", "Panel admin Filament"],
+      "challenges": ["Menjalankan Filament di atas Laravel 5 yang sudah legacy", "Deploy aplikasi PHP ke Railway tanpa konfigurasi server tambahan"],
+      "result": "Website live di russ-rental.up.railway.app dan armada bisa dikelola langsung dari dashboard admin."
     }
   },
   "servicesData": {

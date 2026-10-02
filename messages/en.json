@@ -134,7 +134,14 @@
   },
   "notFound": {
     "title": "Page Not Found",
-    "description": "The page you're looking for doesn't exist or has been moved."
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "headline": "Boo! Page missing!",
+    "cta": "Find shelter",
+    "explain": {
+      "trigger": "What does 404 mean?",
+      "title": "Why 404?",
+      "body": "404 is an HTTP status code meaning the server could not find the page you requested. The most common causes are a mistyped address, a page that was removed, or a link that has since changed."
+    }
   },
   "error": {
     "title": "Something Went Wrong",
@@ -182,6 +189,17 @@
       "features": ["Product filtering", "Local shopping cart", "Product detail page"],
       "challenges": ["Managing cart state without additional libraries"],
       "result": "Stronger understanding of component composition and props drilling."
+    },
+    "russRental": {
+      "title": "Russ Rental — Car Rental Website",
+      "description": "Car rental website with a fleet catalogue, booking form, and Filament-powered admin panel.",
+      "category": "Web App",
+      "overview": "Russ Rental is a car rental business that needed a web presence to showcase its fleet, explain its services, and take booking enquiries directly from potential customers.",
+      "problem": "The rental business relied entirely on WhatsApp enquiries. There was no fleet catalogue that could be shared, and customers had to start a chat before seeing any actual vehicles.",
+      "solution": "A company profile website with service pages, a car catalogue, a booking form wired to WhatsApp, and a Filament admin panel for managing the fleet and incoming requests.",
+      "features": ["Car fleet catalogue", "WhatsApp booking form", "Filament admin panel"],
+      "challenges": ["Running Filament on top of an already-legacy Laravel 5 app", "Deploying a PHP app to Railway without extra server configuration"],
+      "result": "The site is live at russ-rental.up.railway.app and the fleet is now manageable straight from the admin dashboard."
     }
   },
   "servicesData": {

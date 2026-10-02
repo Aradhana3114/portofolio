@@ -5,7 +5,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
-export function ProjectGallery({ images, title }: { images: string[]; title: string }) {
+export function ProjectGallery({ images, title, aspect }: { images: string[]; title: string; aspect?: string }) {
   const [active, setActive] = useState<number | null>(null);
 
   if (images.length === 0) return null;
@@ -18,6 +18,7 @@ export function ProjectGallery({ images, title }: { images: string[]; title: str
             key={src}
             onClick={() => setActive(i)}
             className="relative aspect-[16/10] overflow-hidden rounded-lg border border-border bg-muted"
+            style={aspect ? { aspectRatio: aspect } : undefined}
           >
             <Image src={src} alt={`${title} screenshot ${i + 1}`} fill className="object-cover" />
           </button>

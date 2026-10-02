@@ -26,7 +26,10 @@ export function ProjectDetail({ project }: { project: Project }) {
           {t(project.categoryKey)} · {project.year}
         </p>
 
-        <div className="relative mt-10 aspect-[16/9] overflow-hidden rounded-lg border border-border bg-muted">
+        <div
+          className="relative mt-10 aspect-[16/9] overflow-hidden rounded-lg border border-border bg-muted"
+          style={{ aspectRatio: project.imageAspect }}
+        >
           <Image src={project.image} alt={t(project.titleKey)} fill className="object-cover" priority />
         </div>
 
@@ -59,7 +62,11 @@ export function ProjectDetail({ project }: { project: Project }) {
             {project.gallery.length > 0 && (
               <section>
                 <h2 className="mb-4 text-h3 font-display">{t("projectDetail.gallery")}</h2>
-                <ProjectGallery images={project.gallery} title={t(project.titleKey)} />
+                <ProjectGallery
+                  images={project.gallery}
+                  title={t(project.titleKey)}
+                  aspect={project.imageAspect}
+                />
               </section>
             )}
 
