@@ -60,7 +60,7 @@ export function Marquee() {
       <p className="sr-only">{PHRASES.join(", ")}</p>
       <div
         ref={trackRef}
-        className="animate-marquee flex w-max font-asimovian text-[clamp(1.125rem,2.6vw,2.25rem)] font-bold uppercase leading-none tracking-tight text-foreground will-change-transform"
+        className="animate-marquee flex w-max font-asimovian text-[clamp(0.875rem,1.7vw,1.4rem)] font-bold uppercase leading-none tracking-tight text-foreground will-change-transform"
         style={{ "--marquee-duration": "25s" } as React.CSSProperties}
       >
         <Half />
