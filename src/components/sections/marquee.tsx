@@ -14,7 +14,7 @@ function Half() {
           {PHRASES.map((phrase, i) => (
             <span key={phrase} className="flex shrink-0 items-center">
               <span className="whitespace-nowrap">{phrase}</span>
-              <span className="px-4 text-foreground/40 sm:px-6 md:px-8">{SEPARATOR}</span>
+              <span className="px-4 text-brutal-ink sm:px-6 md:px-8">{SEPARATOR}</span>
             </span>
           ))}
         </span>
@@ -56,15 +56,17 @@ export function Marquee() {
   }, []);
 
   return (
-    <div className="overflow-hidden border-y border-border py-5 sm:py-6">
-      <p className="sr-only">{PHRASES.join(", ")}</p>
-      <div
-        ref={trackRef}
-        className="animate-marquee flex w-max font-asimovian text-[clamp(0.875rem,1.35vw,1.15rem)] font-bold uppercase leading-none tracking-tight text-foreground will-change-transform"
-        style={{ "--marquee-duration": "25s" } as React.CSSProperties}
-      >
-        <Half />
-        <Half />
+    <div className="relative z-10 overflow-hidden py-2">
+      <div className="-rotate-[1.2deg] border-y-[5px] border-brutal-ink bg-brutal-orange py-4 shadow-brutal-md sm:py-5">
+        <p className="sr-only">{PHRASES.join(", ")}</p>
+        <div
+          ref={trackRef}
+          className="animate-marquee flex w-max font-display text-[clamp(0.875rem,1.6vw,1.25rem)] font-extrabold uppercase leading-none tracking-tight text-brutal-ink will-change-transform"
+          style={{ "--marquee-duration": "25s" } as React.CSSProperties}
+        >
+          <Half />
+          <Half />
+        </div>
       </div>
     </div>
   );

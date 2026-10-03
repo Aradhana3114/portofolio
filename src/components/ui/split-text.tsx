@@ -8,7 +8,8 @@ interface SplitTextProps {
   stagger?: number;
   play?: boolean;
   wave?: boolean;
-  shine?: boolean;
+  /** Per-letter tilt in degrees, applied progressively down the word. */
+  tilt?: number;
 }
 
 export function SplitText({
@@ -18,11 +19,11 @@ export function SplitText({
   delay = 0,
   stagger = 0.06,
   play = true,
-  wave = true,
-  shine = true,
+  wave = false,
+  tilt = 0,
 }: SplitTextProps) {
   const words = text.split(" ");
-  const loopActive = play && (wave || shine);
+  const loopActive = play && wave;
   let index = 0;
 
   return (
@@ -36,25 +37,26 @@ export function SplitText({
             {Array.from(word).map((char, ci) => {
               const letterDelay = (delay + index * stagger) * 1000;
               const waveDelay = letterDelay + 700 + index * 70;
+              const charTilt = tilt === 0 ? 0 : ci % 2 === 0 ? tilt : -tilt;
               index += 1;
               return (
                 <span
                   key={ci}
-                  className="inline-block"
+                  className="inline-block will-change-transform"
                   style={{
                     opacity: play ? 1 : 0,
-                    transform: play ? "translateY(0)" : "translateY(0.75em)",
+                    transform: play ? "none" : "translateY(0.6em) rotate(-6deg) scale(0.86)",
                     transitionProperty: "opacity, transform",
-                    transitionDuration: "500ms",
-                    transitionTimingFunction: "cubic-bezier(0.16,1,0.3,1)",
+                    transitionDuration: "600ms",
+                    transitionTimingFunction: "cubic-bezier(0.34,1.56,0.64,1)",
                     transitionDelay: play ? `${letterDelay}ms` : "0ms",
                   }}
                 >
                   <span
-                    className={wave ? "split-char-loop" : ""}
-                    style={{ animationDelay: `${waveDelay}ms` }}
+                    className={wave ? "split-char-loop" : undefined}
+                    style={{ animationDelay: `${waveDelay}ms`, rotate: `${charTilt}deg` }}
                   >
-                    <span className={shine && play ? "split-char-shine" : undefined}>{char}</span>
+                    {char}
                   </span>
                 </span>
               );

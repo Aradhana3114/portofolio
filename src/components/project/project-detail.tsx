@@ -8,6 +8,14 @@ import { Button } from "@/components/ui/button";
 import { ProjectGallery } from "./project-gallery";
 import { projects } from "@/data/projects";
 import { Reveal } from "@/components/ui/reveal";
+import { Sticker } from "@/components/ui/sticker";
+
+const sections = [
+  { key: "overview", bodyKey: "overviewKey", tone: "bg-brutal-yellow" },
+  { key: "challenge", bodyKey: "problemKey", tone: "bg-brutal-blue" },
+  { key: "solution", bodyKey: "solutionKey", tone: "bg-brutal-green" },
+  { key: "results", bodyKey: "resultKey", tone: "bg-brutal-purple" },
+] as const;
 
 export function ProjectDetail({ project }: { project: Project }) {
   const t = useTranslations();
@@ -18,56 +26,69 @@ export function ProjectDetail({ project }: { project: Project }) {
   return (
     <article className="pb-24 pt-32">
       <div className="container-editorial">
-        <Link href="/#work" className="mb-10 inline-flex items-center gap-2 text-body text-foreground/60 hover:text-foreground">
-          <ArrowLeft size={16} /> {t("projectDetail.backToWorks")}
+        <Link
+          href="/#work"
+          className="mb-10 inline-flex items-center gap-2 rounded-sm border-[3px] border-border bg-background px-4 py-2 font-display text-caption font-extrabold uppercase text-foreground shadow-brutal-sm transition-all duration-150 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:bg-brutal-yellow hover:shadow-brutal focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-brutal-blue"
+        >
+          <ArrowLeft size={16} strokeWidth={3} /> {t("projectDetail.backToWorks")}
         </Link>
 
         <Reveal>
-          <h1 className="text-display-sm font-display md:text-h1">{t(project.titleKey)}</h1>
-          <p className="mt-3 text-body text-foreground/60">
-            {t(project.categoryKey)} · {project.year}
-          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Sticker tone="pink" rotate={-2}>
+              {t(project.categoryKey)}
+            </Sticker>
+            <Sticker tone="yellow" rotate={2} shape="pill">
+              {project.year}
+            </Sticker>
+          </div>
+          <h1 className="mt-5 font-display text-display-sm font-extrabold uppercase leading-[0.92] tracking-tighter">
+            {t(project.titleKey)}
+          </h1>
         </Reveal>
 
         <Reveal delay={0.1} y={24}>
-          <div
-            className="relative mt-10 aspect-[16/9] overflow-hidden rounded-lg border border-border bg-muted"
-            style={{ aspectRatio: project.imageAspect }}
-          >
-            <Image src={project.image} alt={t(project.titleKey)} fill className="object-cover" priority />
+          <div className="mt-10 border-[3px] border-border bg-brutal-pink p-3 shadow-brutal-lg">
+            <div className="relative aspect-[16/9] bg-muted" style={{ aspectRatio: project.imageAspect }}>
+              <Image src={project.image} alt={t(project.titleKey)} fill className="object-cover" priority />
+            </div>
           </div>
         </Reveal>
 
-        <div className="mt-16 grid gap-16 md:grid-cols-[2fr_1fr]">
+        <div className="mt-16 grid gap-14 md:grid-cols-[2fr_1fr]">
           <div className="flex flex-col gap-12">
-            <Reveal>
-              <section>
-                <h2 className="mb-3 text-h3 font-display">{t("projectDetail.overview")}</h2>
-                <p className="text-body text-foreground/80">{t(project.caseStudy.overviewKey)}</p>
-              </section>
-            </Reveal>
+            {sections.map((section, i) => (
+              <Reveal key={section.key} delay={i * 0.05}>
+                <section className="border-[3px] border-border bg-background p-6 shadow-brutal sm:p-7">
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className={`h-8 w-3 shrink-0 border-[3px] border-border ${section.tone}`} aria-hidden="true" />
+                    <h2 className="font-display text-h3 font-extrabold uppercase leading-tight tracking-tighter">
+                      {t(`projectDetail.${section.key}`)}
+                    </h2>
+                  </div>
+                  <p className="text-body text-foreground/80">{t(project.caseStudy[section.bodyKey])}</p>
+                </section>
+              </Reveal>
+            ))}
 
             <Reveal>
-              <section>
-                <h2 className="mb-3 text-h3 font-display">{t("projectDetail.challenge")}</h2>
-                <p className="text-body text-foreground/80">{t(project.caseStudy.problemKey)}</p>
-              </section>
-            </Reveal>
-
-            <Reveal>
-              <section>
-                <h2 className="mb-3 text-h3 font-display">{t("projectDetail.solution")}</h2>
-                <p className="text-body text-foreground/80">{t(project.caseStudy.solutionKey)}</p>
-              </section>
-            </Reveal>
-
-            <Reveal>
-              <section>
-                <h2 className="mb-3 text-h3 font-display">{t("projectDetail.keyFeatures")}</h2>
-                <ul className="flex flex-col gap-2 text-body text-foreground/80">
+              <section className="border-[3px] border-border bg-muted p-6 sm:p-7">
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="h-8 w-3 shrink-0 border-[3px] border-border bg-brutal-orange" aria-hidden="true" />
+                  <h2 className="font-display text-h3 font-extrabold uppercase leading-tight tracking-tighter">
+                    {t("projectDetail.keyFeatures")}
+                  </h2>
+                </div>
+                <ul className="flex flex-col gap-3">
                   {project.caseStudy.featuresKeys.map((key, i) => (
                     <Reveal key={key} delay={i * 0.06} y={10}>
-                      <li>{t(key)}</li>
+                      <li className="flex items-start gap-3 text-body text-foreground/80">
+                        <span
+                          className="mt-1.5 h-3.5 w-3.5 shrink-0 rotate-45 border-[3px] border-border bg-brutal-yellow"
+                          aria-hidden="true"
+                        />
+                        <span>{t(key)}</span>
+                      </li>
                     </Reveal>
                   ))}
                 </ul>
@@ -77,61 +98,77 @@ export function ProjectDetail({ project }: { project: Project }) {
             {project.gallery.length > 0 && (
               <Reveal>
                 <section>
-                  <h2 className="mb-4 text-h3 font-display">{t("projectDetail.gallery")}</h2>
-                  <ProjectGallery
-                    images={project.gallery}
-                    title={t(project.titleKey)}
-                    aspect={project.imageAspect}
-                  />
+                  <h2 className="mb-5 font-display text-h3 font-extrabold uppercase leading-tight tracking-tighter">
+                    {t("projectDetail.gallery")}
+                  </h2>
+                  <ProjectGallery images={project.gallery} title={t(project.titleKey)} aspect={project.imageAspect} />
                 </section>
               </Reveal>
             )}
-
-            <Reveal>
-              <section>
-                <h2 className="mb-3 text-h3 font-display">{t("projectDetail.results")}</h2>
-                <p className="text-body text-foreground/80">{t(project.caseStudy.resultKey)}</p>
-              </section>
-            </Reveal>
           </div>
 
           <Reveal delay={0.1}>
-            <aside className="flex flex-col gap-8">
-            <div>
-              <h3 className="mb-3 text-caption text-foreground/50">{t("projectDetail.techStack")}</h3>
-              <div className="flex flex-wrap gap-2">
-                {project.technologies.map((tech) => (
-                  <Badge key={tech}>{tech}</Badge>
-                ))}
+            <aside className="sticky top-28 flex flex-col gap-6">
+              <div className="border-[3px] border-border bg-brutal-yellow p-5 text-brutal-ink shadow-brutal">
+                <h3 className="mb-4 font-display text-caption font-extrabold uppercase tracking-[0.2em] opacity-70">
+                  {t("projectDetail.techStack")}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {project.technologies.map((tech) => (
+                    <Badge key={tech} className="bg-background">
+                      {tech}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              {project.demoUrl && (
-                <Button href={project.demoUrl} target="_blank" rel="noopener noreferrer">
-                  {t("projectDetail.liveDemo")}
-                </Button>
-              )}
-              {project.githubUrl && (
-                <Button href={project.githubUrl} target="_blank" rel="noopener noreferrer" variant="secondary">
-                  {t("projectDetail.sourceCode")}
-                </Button>
-              )}
-            </div>
-          </aside>
+
+              <div className="flex flex-col gap-4">
+                {project.demoUrl && (
+                  <Button href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="w-full">
+                    {t("projectDetail.liveDemo")}
+                  </Button>
+                )}
+                {project.githubUrl && (
+                  <Button
+                    href={project.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="secondary"
+                    className="w-full"
+                  >
+                    {t("projectDetail.sourceCode")}
+                  </Button>
+                )}
+              </div>
+            </aside>
           </Reveal>
         </div>
 
-        <Reveal className="mt-20 grid gap-6 border-t border-border pt-10 sm:grid-cols-2">
+        <Reveal className="mt-20 grid gap-6 sm:grid-cols-2">
           {prev && (
-            <Link href={`/projects/${prev.slug}`} className="group">
-              <p className="text-caption text-foreground/50">{t("projectDetail.previousProject")}</p>
-              <p className="mt-1 text-h3 font-display group-hover:text-accent">{t(prev.titleKey)}</p>
+            <Link
+              href={`/projects/${prev.slug}`}
+              className="group border-[3px] border-border bg-background p-5 shadow-brutal transition-all duration-150 hover:-translate-x-[3px] hover:-translate-y-[3px] hover:bg-brutal-blue hover:shadow-brutal-md"
+            >
+              <p className="font-display text-metadata font-extrabold uppercase tracking-[0.2em] opacity-60">
+                ← {t("projectDetail.previousProject")}
+              </p>
+              <p className="mt-2 font-display text-h3 font-extrabold uppercase leading-tight tracking-tighter">
+                {t(prev.titleKey)}
+              </p>
             </Link>
           )}
           {next && (
-            <Link href={`/projects/${next.slug}`} className="group text-right">
-              <p className="text-caption text-foreground/50">{t("projectDetail.nextProject")}</p>
-              <p className="mt-1 text-h3 font-display group-hover:text-accent">{t(next.titleKey)}</p>
+            <Link
+              href={`/projects/${next.slug}`}
+              className="group border-[3px] border-border bg-background p-5 text-right shadow-brutal transition-all duration-150 hover:-translate-x-[3px] hover:-translate-y-[3px] hover:bg-brutal-pink hover:shadow-brutal-md"
+            >
+              <p className="font-display text-metadata font-extrabold uppercase tracking-[0.2em] opacity-60">
+                {t("projectDetail.nextProject")} →
+              </p>
+              <p className="mt-2 font-display text-h3 font-extrabold uppercase leading-tight tracking-tighter">
+                {t(next.titleKey)}
+              </p>
             </Link>
           )}
         </Reveal>

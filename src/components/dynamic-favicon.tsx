@@ -7,7 +7,7 @@ export function DynamicFavicon() {
   const { theme } = useTheme();
 
   useEffect(() => {
-    const href = theme === "dark" ? "/images/putih.png" : "/images/hitam.png";
+    const href = theme === "dark" ? "/images/mark-cream.png" : "/images/mark-ink.png";
     let link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
     if (!link) {
       link = document.createElement("link");

@@ -23,6 +23,18 @@ type YTPlayerInstance = {
 
 type YTPlayerEvent = { data?: number };
 
+// Each playlist row hovers in its own pastel, cycled by index. Written out as
+// literal strings so Tailwind's scanner can see every variant. `border-brutal-ink`
+// on hover keeps the 3px outline readable once the fill turns pastel in dark mode.
+const PLAYLIST_HOVER_TONES = [
+  "hover:bg-brutal-yellow hover:text-brutal-ink hover:border-brutal-ink",
+  "hover:bg-brutal-blue hover:text-brutal-ink hover:border-brutal-ink",
+  "hover:bg-brutal-pink hover:text-brutal-ink hover:border-brutal-ink",
+  "hover:bg-brutal-green hover:text-brutal-ink hover:border-brutal-ink",
+  "hover:bg-brutal-orange hover:text-brutal-ink hover:border-brutal-ink",
+  "hover:bg-brutal-purple hover:text-brutal-ink hover:border-brutal-ink",
+] as const;
+
 type YTNamespace = {
   Player: new (
     el: HTMLElement,
@@ -401,23 +413,23 @@ function MusicPlayerInner() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-2 w-full rounded-3xl border border-border bg-background/95 p-2 shadow-xl shadow-black/10 backdrop-blur-xl sm:w-80"
+            className="mb-3 w-full border-[3px] border-border bg-background p-2 shadow-brutal-lg sm:w-[22rem]"
           >
-            <div className="flex items-center justify-between px-3 py-2">
-              <p className="text-caption font-semibold uppercase tracking-widest text-foreground/50">
+            <div className="mb-2 flex items-center justify-between gap-2 border-[3px] border-border bg-brutal-pink px-3 py-2">
+              <p className="font-display text-caption font-extrabold uppercase tracking-widest text-brutal-ink">
                 {t("music.playlist")}
               </p>
               <button
                 onClick={() => setOpen(false)}
                 aria-label={t("music.close")}
-                className="rounded-full p-1 text-foreground/50 transition-colors hover:text-foreground"
+                className="flex h-7 w-7 items-center justify-center rounded-sm border-[3px] border-border bg-brutal-ink text-brutal-yellow transition-transform hover:rotate-90"
               >
-                <X size={14} />
+                <X size={14} strokeWidth={3} />
               </button>
             </div>
             <ul className="max-h-64 overflow-y-auto pr-1">
               {hasTracks ? playlist.map((item, i) => (
-                <li key={item.id}>
+                <li key={item.id} className={cn(i > 0 && "mt-2")}>
                   <button
                     onClick={() => {
                       goTo(i);
@@ -426,17 +438,18 @@ function MusicPlayerInner() {
                     }}
                     aria-current={i === index}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors hover:bg-muted",
-                      i === index && "bg-muted"
+                      "flex w-full items-center gap-3 rounded-sm border-[3px] border-border bg-muted px-3 py-2 text-left transition-all duration-150 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-brutal-sm",
+                      PLAYLIST_HOVER_TONES[i % PLAYLIST_HOVER_TONES.length],
+                      i === index && "bg-brutal-blue text-brutal-ink shadow-brutal-sm"
                     )}
                   >
-                    <span className="w-4 shrink-0 text-metadata text-foreground/40">
+                    <span className="w-4 shrink-0 text-metadata font-bold">
                       {i === index && playing ? (
                         <span className="flex h-3 items-end gap-[2px]">
                           {[0, 1, 2].map((bar) => (
                             <span
                               key={bar}
-                              className="animate-music-bar w-[2px] rounded-full bg-foreground"
+                              className="animate-music-bar w-[3px] bg-current"
                               style={{ height: "100%", animationDelay: `${bar * 0.15}s` }}
                             />
                           ))}
@@ -446,10 +459,10 @@ function MusicPlayerInner() {
                       )}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-body">{item.title}</span>
-                      <span className="block truncate text-metadata text-foreground/50">{item.artist}</span>
+                      <span className="block truncate text-caption font-bold">{item.title}</span>
+                      <span className="block truncate text-metadata opacity-60">{item.artist}</span>
                     </span>
-                    {i === index && <Play size={13} className="shrink-0 text-foreground/60" />}
+                    {i === index && <Play size={13} strokeWidth={3} className="shrink-0" />}
                   </button>
                 </li>
               )) : (
@@ -460,25 +473,21 @@ function MusicPlayerInner() {
         )}
       </AnimatePresence>
 
-      <div className="relative flex items-center gap-2 rounded-full border border-foreground/20 bg-background/95 px-3 py-2 shadow-lg shadow-black/20 backdrop-blur-xl sm:gap-3 sm:px-4">
-        <span className="hidden text-[10px] font-semibold uppercase tracking-[0.25em] text-accent-secondary sm:block">
-          {t("music.label")}
-        </span>
-
+      <div className="relative flex items-center gap-2 rounded-sm border-[3px] border-border bg-background px-3 pb-4 pt-2 shadow-brutal-md sm:gap-2.5 sm:px-3.5">
         <span className="flex items-center gap-[3px]" aria-hidden="true">
           {[0, 1, 2].map((dot) => (
             <span
               key={dot}
-              className={cn("h-1.5 w-1.5 rounded-full bg-accent-secondary", playing && "animate-music-dot")}
+              className={cn("h-2 w-2 border-[2px] border-border bg-brutal-pink", playing && "animate-music-dot")}
               style={{ animationDelay: `${dot * 0.18}s` }}
             />
           ))}
         </span>
 
-        <div ref={boxRef} className="w-32 min-w-0 overflow-hidden sm:w-56">
+        <div ref={boxRef} className="w-24 min-w-0 overflow-hidden sm:w-36">
           <span
             className={cn(
-              "inline-block whitespace-nowrap text-caption text-foreground/80 select-none",
+              "inline-block whitespace-nowrap text-caption font-bold select-none",
               overflow > 0 && "animate-marquee"
             )}
             style={
@@ -498,32 +507,32 @@ function MusicPlayerInner() {
           </span>
         </div>
 
-        <span className="h-6 w-px bg-border" aria-hidden="true" />
+        <span className="hidden h-7 w-[3px] shrink-0 bg-border sm:block" aria-hidden="true" />
 
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1.5">
           <button
             onClick={() => skip(-1)}
             disabled={!hasTracks}
             aria-label={t("music.previous")}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-foreground/70 transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
+            className="flex h-9 w-9 items-center justify-center rounded-sm border-[3px] border-border bg-background transition-all duration-150 hover:bg-brutal-yellow hover:shadow-brutal-sm disabled:cursor-not-allowed disabled:opacity-30"
           >
-            <SkipBack size={16} fill="currentColor" />
+            <SkipBack size={15} strokeWidth={3} />
           </button>
           <button
             onClick={togglePlayback}
             disabled={!hasTracks}
             aria-label={playing ? t("music.pause") : t("music.play")}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-30"
+            className="flex h-10 w-10 items-center justify-center rounded-sm border-[3px] border-border bg-foreground text-background transition-all duration-150 hover:bg-brutal-green hover:text-brutal-ink hover:shadow-brutal-sm disabled:cursor-not-allowed disabled:opacity-30"
           >
-            {playing ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="ml-0.5" />}
+            {playing ? <Pause size={16} strokeWidth={3} /> : <Play size={16} strokeWidth={3} className="ml-0.5" />}
           </button>
           <button
             onClick={() => skip(1)}
             disabled={!hasTracks}
             aria-label={t("music.next")}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-foreground/70 transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
+            className="flex h-9 w-9 items-center justify-center rounded-sm border-[3px] border-border bg-background transition-all duration-150 hover:bg-brutal-yellow hover:shadow-brutal-sm disabled:cursor-not-allowed disabled:opacity-30"
           >
-            <SkipForward size={16} fill="currentColor" />
+            <SkipForward size={15} strokeWidth={3} />
           </button>
         </div>
 
@@ -532,31 +541,31 @@ function MusicPlayerInner() {
           aria-label={t("music.playlist")}
           aria-expanded={open}
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-muted",
-            open ? "text-foreground" : "text-foreground/60 hover:text-foreground"
+            "flex h-9 w-9 items-center justify-center rounded-sm border-[3px] border-border transition-all duration-150 hover:shadow-brutal-sm",
+            open ? "bg-brutal-orange text-brutal-ink" : "bg-background hover:bg-brutal-orange hover:text-brutal-ink"
           )}
         >
-          <ListMusic size={16} />
+          <ListMusic size={15} strokeWidth={3} />
         </button>
 
         <button
           onClick={() => setMuted((value) => !value)}
           aria-label={muted ? t("music.unmute") : t("music.mute")}
-          className="hidden h-8 w-8 items-center justify-center rounded-full text-foreground/60 transition-colors hover:bg-muted hover:text-foreground sm:flex"
+          className="hidden h-9 w-9 items-center justify-center rounded-sm border-[3px] border-border bg-background transition-all duration-150 hover:bg-brutal-purple hover:text-brutal-ink hover:shadow-brutal-sm sm:flex"
         >
-          {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          {muted ? <VolumeX size={15} strokeWidth={3} /> : <Volume2 size={15} strokeWidth={3} />}
         </button>
 
         <button
           type="button"
           onClick={handleSeek}
           aria-label={t("music.seek")}
-          className="absolute inset-x-7 bottom-1 h-1.5 cursor-pointer"
+          className="absolute inset-x-3 bottom-1.5 h-2.5 cursor-pointer"
         >
-          <span className="absolute inset-0 rounded-full bg-muted/70" />
+          <span className="absolute inset-0 border-[3px] border-border bg-muted" />
           <span
-            className="absolute inset-y-0 left-0 rounded-full bg-accent-secondary"
-            style={{ width: `${progress}%` }}
+            className="absolute inset-y-[3px] left-[3px] bg-brutal-blue"
+            style={{ width: `calc(${progress}% - 3px)` }}
           />
         </button>
       </div>

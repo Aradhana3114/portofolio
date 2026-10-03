@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Lock, LogOut, Pencil, Plus, RefreshCw, Trash2, X } from "lucide-react";
+import { Lock, LogOut, Pencil, Plus, RefreshCw, Trash2, X, Eye, EyeOff } from "lucide-react";
 import type { AdminGuestbookEntry, GuestbookReply } from "@/data/types";
 import { Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ export function GuestbookAdmin() {
   const [missing, setMissing] = useState<string[]>([]);
   const [passcode, setPasscode] = useState("");
   const [authError, setAuthError] = useState("");
+  const [showPasscode, setShowPasscode] = useState(false);
   const [entries, setEntries] = useState<AdminGuestbookEntry[]>([]);
   const [loadError, setLoadError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -139,22 +140,46 @@ export function GuestbookAdmin() {
     setGate("locked");
   }
 
+  const isLockedView = gate !== "unlocked";
+
   return (
-    <section className="border-b border-border py-24">
-      <div className="container-editorial">
-        <header className="mb-10 flex flex-wrap items-end justify-between gap-4">
+    <section
+      className={
+        isLockedView
+          ? "relative flex min-h-svh items-center justify-center py-10"
+          : "relative py-24"
+      }
+    >
+      <div className="container-editorial w-full">
+        <header
+          className={
+            isLockedView
+              ? "mb-7 flex flex-col items-center gap-3 text-center"
+              : "mb-10 flex flex-wrap items-end justify-between gap-4"
+          }
+        >
           <div>
-            <h1 className="mb-2 text-h2 font-display">{t("admin.title")}</h1>
-            <p className="text-body text-foreground/70">{t("admin.subtitle")}</p>
+            <h1 className="inline-block -rotate-1 border-[3px] border-border bg-brutal-yellow px-4 py-1.5 font-display text-h1 font-extrabold uppercase leading-none tracking-tighter text-brutal-ink shadow-brutal-md">
+              {t("admin.title")}
+            </h1>
+            <p
+              className={
+                isLockedView
+                  ? "mx-auto mt-2.5 max-w-md text-caption text-foreground/70"
+                  : "mt-3 max-w-xl text-body text-foreground/70"
+              }
+            >
+              {t("admin.subtitle")}
+            </p>
           </div>
           {gate === "unlocked" && (
-            <div className="flex items-center gap-2">
-              <Button variant="secondary" onClick={loadEntries} className="gap-2 px-4 py-2 text-caption">
-                <RefreshCw size={14} />
+            <div className="flex items-center gap-3">
+              <Button variant="secondary" size="sm" onClick={loadEntries} className="gap-2">
+                <RefreshCw size={14} strokeWidth={3} />
                 {t("admin.refresh")}
               </Button>
-              <Button variant="secondary" onClick={lock} className="gap-2 px-4 py-2 text-caption">
-                <LogOut size={14} />
+              <Button variant="secondary" size="sm" onClick={lock} className="gap-2">
+                <LogOut size={14} strokeWidth={3} />
                 {t("admin.lock")}
               </Button>
             </div>
@@ -162,42 +187,75 @@ export function GuestbookAdmin() {
         </header>
 
         {gate === "loading" && (
-          <p className="text-body text-foreground/50">{t("admin.checking")}</p>
+          <div className="mx-auto max-w-md border-[3px] border-border bg-muted px-5 py-4 text-center text-body font-bold">
+            {t("admin.checking")}
+          </div>
         )}
 
         {gate === "misconfigured" && (
-          <div className="rounded-md border border-destructive/40 bg-destructive/10 p-6">
-            <p className="mb-2 text-body font-medium">{t("admin.misconfiguredTitle")}</p>
-            <p className="mb-3 text-caption text-foreground/70">{t("admin.misconfiguredBody")}</p>
+          <div className="mx-auto max-w-2xl border-[3px] border-border bg-brutal-pink p-6 text-brutal-ink shadow-brutal-lg">
+            <p className="mb-2 font-display text-body font-extrabold uppercase">{t("admin.misconfiguredTitle")}</p>
+            <p className="mb-3 text-caption text-brutal-ink/80">{t("admin.misconfiguredBody")}</p>
             {missing.length > 0 && (
               <ul className="space-y-1">
                 {missing.map((name) => (
                   <li key={name}>
-                    <code className="rounded bg-foreground/10 px-1.5 py-0.5 text-metadata text-foreground">
+                    <code className="border-[3px] border-border bg-background px-1.5 py-0.5 text-metadata text-foreground">
                       {name}
                     </code>
                   </li>
                 ))}
               </ul>
             )}
-            <p className="mt-3 text-metadata text-foreground/50">{t("admin.misconfiguredHint")}</p>
+            <p className="mt-3 text-metadata font-bold uppercase tracking-widest opacity-70">{t("admin.misconfiguredHint")}</p>
           </div>
         )}
 
         {gate === "locked" && (
-          <form onSubmit={handleUnlock} className="flex max-w-sm flex-col gap-4">
-            <p className="text-body text-foreground/70">{t("admin.prompt")}</p>
-            <input
-              type="password"
-              value={passcode}
-              onChange={(e) => setPasscode(e.target.value)}
-              placeholder={t("admin.passcodePlaceholder")}
-              autoComplete="current-password"
-              className="w-full rounded-md border border-border bg-background px-4 py-3 text-body text-foreground placeholder:text-foreground/40 outline-none transition-colors duration-200 focus:border-accent"
-            />
-            {authError && <p className="text-caption text-red-600">{authError}</p>}
-            <Button type="submit" disabled={busy}>
-              <Lock size={14} />
+          <form
+            onSubmit={handleUnlock}
+            className="mx-auto flex max-w-md flex-col items-stretch gap-4 border-[3px] border-border bg-muted p-5 shadow-brutal-lg sm:p-6"
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className="flex h-11 w-11 shrink-0 items-center justify-center border-[3px] border-border bg-brutal-yellow text-brutal-ink shadow-brutal-sm"
+                aria-hidden="true"
+              >
+                <Lock size={20} strokeWidth={3} />
+              </span>
+              <p className="text-caption font-bold">{t("admin.prompt")}</p>
+            </div>
+
+            <div className="relative">
+              <input
+                type={showPasscode ? "text" : "password"}
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
+                placeholder={t("admin.passcodePlaceholder")}
+                autoComplete="current-password"
+                aria-label={t("admin.passcodePlaceholder")}
+                className="w-full rounded-sm border-[3px] border-border bg-background py-2.5 pl-4 pr-14 text-body text-foreground placeholder:text-foreground/40 transition-all duration-150 focus:outline-none focus:shadow-brutal-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasscode((v) => !v)}
+                aria-label={showPasscode ? t("admin.hidePasscode") : t("admin.showPasscode")}
+                aria-pressed={showPasscode}
+                title={showPasscode ? t("admin.hidePasscode") : t("admin.showPasscode")}
+                className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-sm border-[3px] border-border bg-background text-foreground transition-all duration-150 hover:bg-brutal-purple hover:text-brutal-ink focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[2px] focus-visible:outline-brutal-blue"
+              >
+                {showPasscode ? <EyeOff size={16} strokeWidth={3} /> : <Eye size={16} strokeWidth={3} />}
+              </button>
+            </div>
+
+            {authError && (
+              <p className="border-[3px] border-border bg-brutal-pink px-3 py-2 text-caption font-bold text-brutal-ink">
+                {authError}
+              </p>
+            )}
+
+            <Button type="submit" size="md" disabled={busy} className="w-full">
+              <Lock size={16} strokeWidth={3} />
               {busy ? t("admin.checking") : t("admin.unlock")}
             </Button>
           </form>
@@ -205,13 +263,17 @@ export function GuestbookAdmin() {
 
         {gate === "unlocked" && (
           <>
-            {loadError && <p className="mb-4 text-caption text-red-600">{loadError}</p>}
-
-            {entries.length === 0 && (
-              <p className="text-body text-foreground/50">{t("admin.empty")}</p>
+            {loadError && (
+              <p className="mb-4 border-[3px] border-border bg-brutal-pink px-4 py-3 text-caption font-bold text-brutal-ink">
+                {loadError}
+              </p>
             )}
 
-            <div className="flex flex-col gap-6">
+            {entries.length === 0 && (
+              <p className="border-[3px] border-border bg-muted px-4 py-3 text-body font-bold">{t("admin.empty")}</p>
+            )}
+
+            <div className="flex flex-col gap-8">
               {entries.map((entry) => (
                 <EntryEditor key={entry.id} entry={entry} request={request} onChanged={loadEntries} />
               ))}
@@ -287,49 +349,49 @@ function EntryEditor({ entry, request, onChanged }: EntryEditorProps) {
   };
 
   return (
-    <article className="rounded-lg border border-border p-5">
-      <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-body font-medium">{entry.name}</span>
+    <article className="border-[3px] border-border bg-background p-5 shadow-brutal">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b-[3px] border-border pb-3">
+        <div className="flex items-center gap-3">
+          <span className="font-display text-body font-extrabold uppercase tracking-tight">{entry.name}</span>
           <span
             className={cn(
-              "rounded-full px-2 py-0.5 text-metadata uppercase tracking-widest",
-              replied ? "bg-accent-secondary/15 text-accent-secondary" : "bg-muted text-foreground/50"
+              "rounded-sm border-[3px] border-border px-2 py-0.5 text-metadata font-display font-extrabold uppercase tracking-widest",
+              replied ? "bg-brutal-green text-brutal-ink" : "bg-muted text-foreground/50"
             )}
           >
             {replied ? t("admin.replied") : t("admin.pending")}
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-metadata text-foreground/40">
+          <span className="text-metadata font-bold text-foreground/40">
             {new Date(entry.created_at).toLocaleString()}
           </span>
           <button
             type="button"
             onClick={removeEntry}
             disabled={busy}
-            className="text-foreground/40 transition-colors hover:text-red-600 disabled:opacity-40"
+            className="flex h-9 w-9 items-center justify-center rounded-sm border-[3px] border-border bg-brutal-pink text-brutal-ink transition-all duration-150 hover:-translate-y-[2px] hover:shadow-brutal-sm disabled:opacity-40"
             aria-label={t("admin.deleteEntry")}
             title={t("admin.deleteEntry")}
           >
-            <Trash2 size={15} />
+            <Trash2 size={15} strokeWidth={3} />
           </button>
         </div>
       </div>
 
-      <p className="text-body text-foreground/70">{entry.message}</p>
+      <p className="text-body text-foreground/75">{entry.message}</p>
 
       {entry.replies.length > 0 && (
-        <ul className="mt-4 flex flex-col gap-2 border-l-2 border-accent-secondary/40 pl-4">
+        <ul className="mt-5 flex flex-col gap-3">
           {entry.replies.map((reply) => (
-            <li key={reply.id}>
+            <li key={reply.id} className="border-[3px] border-border bg-brutal-blue p-4 text-brutal-ink">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <span className="text-caption font-semibold uppercase tracking-widest text-accent-secondary">
+                  <span className="inline-block border-[3px] border-border bg-brutal-ink px-2 py-0.5 font-display text-metadata font-extrabold uppercase text-brutal-yellow">
                     {OWNER_LABEL}
                   </span>
-                  <p className="mt-1 text-body text-foreground/80">{reply.reply}</p>
-                  <span className="mt-1 block text-metadata text-foreground/40">
+                  <p className="mt-2 text-body">{reply.reply}</p>
+                  <span className="mt-1 block text-metadata font-bold opacity-60">
                     {new Date(reply.created_at).toLocaleString()}
                   </span>
                 </div>
@@ -340,21 +402,21 @@ function EntryEditor({ entry, request, onChanged }: EntryEditorProps) {
                       setEditingId(reply.id);
                       setDraft(reply.reply);
                     }}
-                    className="text-foreground/40 transition-colors hover:text-foreground"
+                    className="flex h-9 w-9 items-center justify-center rounded-sm border-[3px] border-border bg-background transition-all duration-150 hover:-translate-y-[2px] hover:bg-brutal-yellow hover:shadow-brutal-sm"
                     aria-label={t("admin.editReply")}
                     title={t("admin.editReply")}
                   >
-                    <Pencil size={14} />
+                    <Pencil size={14} strokeWidth={3} />
                   </button>
                   <button
                     type="button"
                     onClick={() => removeReply(reply.id)}
                     disabled={busy}
-                    className="text-foreground/40 transition-colors hover:text-red-600 disabled:opacity-40"
+                    className="flex h-9 w-9 items-center justify-center rounded-sm border-[3px] border-border bg-brutal-pink transition-all duration-150 hover:-translate-y-[2px] hover:shadow-brutal-sm disabled:opacity-40"
                     aria-label={t("admin.deleteReply")}
                     title={t("admin.deleteReply")}
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={14} strokeWidth={3} />
                   </button>
                 </div>
               </div>
@@ -372,12 +434,12 @@ function EntryEditor({ entry, request, onChanged }: EntryEditorProps) {
             maxLength={1000}
             placeholder={t("admin.replyPlaceholder")}
           />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button
               type="button"
               onClick={() => submitEdit(editingId)}
               disabled={busy || !draft.trim()}
-              className="px-4 py-2 text-caption"
+              size="sm"
             >
               {t("admin.save")}
             </Button>
@@ -388,9 +450,10 @@ function EntryEditor({ entry, request, onChanged }: EntryEditorProps) {
                 setEditingId(null);
                 setDraft("");
               }}
-              className="gap-2 px-4 py-2 text-caption"
+              size="sm"
+              className="gap-2"
             >
-              <X size={14} />
+              <X size={14} strokeWidth={3} />
               {t("admin.cancel")}
             </Button>
           </div>
@@ -404,18 +467,19 @@ function EntryEditor({ entry, request, onChanged }: EntryEditorProps) {
             maxLength={1000}
             placeholder={t("admin.replyPlaceholder")}
           />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button
               type="button"
               onClick={submitNew}
               disabled={busy || !draft.trim()}
-              className="gap-2 px-4 py-2 text-caption"
+              size="sm"
+              className="gap-2"
             >
-              <Plus size={14} />
+              <Plus size={14} strokeWidth={3} />
               {latest ? t("admin.addAnother") : t("admin.reply")}
             </Button>
             {draft.trim() && (
-              <span className="text-metadata text-foreground/40">
+              <span className="border-[3px] border-border bg-muted px-2 py-0.5 text-metadata font-bold">
                 {draft.trim().length}/1000
               </span>
             )}
@@ -423,7 +487,11 @@ function EntryEditor({ entry, request, onChanged }: EntryEditorProps) {
         </div>
       )}
 
-      {error && <p className="mt-3 text-caption text-red-600">{error}</p>}
+      {error && (
+        <p className="mt-4 border-[3px] border-border bg-brutal-pink px-3 py-2 text-caption font-bold text-brutal-ink">
+          {error}
+        </p>
+      )}
     </article>
   );
 }

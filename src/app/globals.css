@@ -1,28 +1,52 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Asimovian&display=swap");
-
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --font-asimovian: "Asimovian", sans-serif;
-  --background: 255 255 255;
-  --foreground: 0 0 0;
-  --muted: 245 245 245;
-  --border: 229 229 229;
-  --accent: 0 0 0;
-  --accent-foreground: 255 255 255;
+  --background: 253 246 227;
+  --foreground: 26 22 18;
+  --muted: 255 238 205;
+  --border: 26 22 18;
+  --accent: 26 22 18;
+  --accent-foreground: 253 246 227;
   --accent-secondary: 59 130 246;
+
+  --brutal-blue: 59 130 246;
+  --brutal-yellow: 255 212 59;
+  --brutal-pink: 255 107 157;
+  --brutal-green: 74 222 128;
+  --brutal-orange: 255 140 42;
+  --brutal-purple: 167 139 250;
+  /* Ink for text sitting ON a pastel brutal fill. Every --brutal-* colour above
+     is light, so this stays dark in both themes — flipping it per theme made
+     pastel-on-cream text unreadable in dark mode (as low as 1.32:1). */
+  --brutal-ink: 26 22 18;
+
+  --pattern-dot: 26 22 18;
+  --pattern-line: 26 22 18;
+  --pattern-grid: 26 22 18;
 }
 
 .dark {
-  --background: 10 10 10;
-  --foreground: 245 245 245;
-  --muted: 25 25 25;
-  --border: 40 40 40;
-  --accent: 255 255 255;
-  --accent-foreground: 0 0 0;
+  --background: 18 16 14;
+  --foreground: 253 246 227;
+  --muted: 34 31 27;
+  --border: 253 246 227;
+  --accent: 253 246 227;
+  --accent-foreground: 18 16 14;
   --accent-secondary: 96 165 250;
+
+  --brutal-blue: 96 165 250;
+  --brutal-yellow: 255 212 59;
+  --brutal-pink: 255 130 175;
+  --brutal-green: 74 222 128;
+  --brutal-orange: 255 158 66;
+  --brutal-purple: 178 158 255;
+  /* --brutal-ink is intentionally NOT overridden here: pastels always take dark ink. */
+
+  --pattern-dot: 253 246 227;
+  --pattern-line: 253 246 227;
+  --pattern-grid: 253 246 227;
 }
 
 * {
@@ -56,6 +80,142 @@ body {
   font-feature-settings: "ss01" on, "ss02" on;
   overflow-x: hidden;
 }
+
+::selection {
+  background: rgb(var(--brutal-yellow));
+  color: rgb(var(--brutal-ink));
+}
+
+.container-editorial {
+  @apply mx-auto max-w-content px-4 sm:px-6 md:px-10 lg:px-16;
+}
+
+/* ---------- Surface patterns ---------- */
+
+.bg-halftone {
+  background-image: radial-gradient(rgb(var(--pattern-dot) / 0.16) 1.5px, transparent 1.5px);
+  background-size: 12px 12px;
+}
+
+.bg-halftone-lg {
+  background-image: radial-gradient(rgb(var(--pattern-dot) / 0.12) 3px, transparent 3px);
+  background-size: 22px 22px;
+}
+
+.bg-grid {
+  background-image: linear-gradient(rgb(var(--pattern-grid) / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--pattern-grid) / 0.1) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.bg-dashed-line {
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgb(var(--pattern-line) / 0.35) 0 10px,
+    transparent 10px 20px
+  );
+}
+
+/* Chunky divider bar used between sections instead of hairlines */
+.divider-block {
+  @apply h-3 w-full border-y-[3px] border-border;
+}
+
+/* ---------- Type helpers ---------- */
+
+/* Looping highlighter sweep, driven by MarkerBand. The steps() timing function
+   lives in the inline style so the step count can match the letter count. */
+@keyframes marker-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0% 0 0);
+  }
+}
+
+.display-caps {
+  @apply font-display font-extrabold uppercase tracking-tighter;
+}
+
+.text-stroke {
+  color: transparent;
+  -webkit-text-stroke: 3px rgb(var(--border));
+  paint-order: stroke fill;
+}
+
+.text-stroke-thin {
+  color: transparent;
+  -webkit-text-stroke: 2px rgb(var(--border));
+  paint-order: stroke fill;
+}
+
+/* Marker highlight behind a heading word */
+.highlight {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+}
+
+.highlight::before {
+  content: "";
+  position: absolute;
+  inset-inline: -0.12em;
+  inset-block: 0.06em 0.16em;
+  background: rgb(var(--brutal-yellow));
+  border: 3px solid rgb(var(--border));
+  z-index: -1;
+  transform: rotate(-1.2deg);
+}
+
+/* Speech-bubble tail for about / contact cards */
+.bubble-tail {
+  position: relative;
+}
+
+.bubble-tail::after {
+  content: "";
+  position: absolute;
+  left: 2rem;
+  bottom: -14px;
+  width: 0;
+  height: 0;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 16px solid rgb(var(--border));
+}
+
+.bubble-tail::before {
+  content: "";
+  position: absolute;
+  left: calc(2rem + 2px);
+  bottom: -10px;
+  z-index: 1;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 14px solid rgb(var(--background));
+}
+
+/* Masking-tape strip used on guestbook notes */
+.tape {
+  position: relative;
+}
+
+.tape::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 76px;
+  height: 24px;
+  transform: translateX(-50%) rotate(-2.5deg);
+  background: rgb(var(--brutal-yellow) / 0.75);
+  border: 3px solid rgb(var(--border));
+}
+
+/* ---------- Keyframes ---------- */
 
 @keyframes marquee {
   from {
@@ -102,45 +262,13 @@ body {
   transform-origin: bottom;
 }
 
-::selection {
-  background: rgb(var(--accent) / 0.2);
-  color: rgb(var(--foreground));
-}
-
-.container-editorial {
-  @apply mx-auto max-w-content px-4 sm:px-6 md:px-10 lg:px-16;
-}
-
-@media (max-width: 639px) {
-  .text-display {
-    font-size: 36px;
-    line-height: 42px;
-  }
-  .text-display-sm {
-    font-size: 28px;
-    line-height: 34px;
-  }
-  .text-h1 {
-    font-size: 28px;
-    line-height: 34px;
-  }
-  .text-h2 {
-    font-size: 22px;
-    line-height: 28px;
-  }
-  .text-h3 {
-    font-size: 18px;
-    line-height: 24px;
-  }
-}
-
 @keyframes letter-wave {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
   }
   50% {
-    transform: translateY(-0.09em);
+    transform: translateY(-0.09em) rotate(2deg);
   }
 }
 
@@ -148,46 +276,83 @@ body {
   animation: letter-wave 1.8s ease-in-out infinite;
 }
 
-@property --shine-x {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: -60vw;
+@keyframes hand-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
-.split-char-shine {
-  color: transparent;
-  background-image: linear-gradient(
-    105deg,
-    rgb(var(--foreground)) 0,
-    rgb(var(--foreground)) calc(var(--shine-x) - 150px),
-    rgb(var(--foreground) / 0.25) var(--shine-x),
-    rgb(var(--foreground) / 0.25) calc(var(--shine-x) + 70px),
-    rgb(var(--foreground)) calc(var(--shine-x) + 220px),
-    rgb(var(--foreground)) 100%
-  );
-  background-attachment: fixed;
-  -webkit-background-clip: text;
-  background-clip: text;
+.scribble-underline path {
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
 }
 
-@keyframes shine-sweep {
-  0% {
-    --shine-x: 130vw;
+.scribble-on .scribble-underline path {
+  animation: hand-draw 0.7s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
   }
-  22% {
-    --shine-x: -60vw;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 14s linear infinite;
+}
+
+@keyframes blink-hard {
+  0%,
+  49% {
+    opacity: 1;
   }
+  50%,
   100% {
-    --shine-x: -60vw;
+    opacity: 0.25;
   }
 }
 
-.split-loop-active .split-char-shine {
-  animation: shine-sweep 7s linear infinite;
+.animate-blink-hard {
+  animation: blink-hard 1.05s steps(1) infinite;
 }
+
+/* ---------- Mobile type ---------- */
+
+@media (max-width: 639px) {
+  .text-stroke {
+    -webkit-text-stroke-width: 2px;
+  }
+}
+
+@media (max-width: 639px) {
+  .text-display {
+    font-size: 2.125rem;
+    line-height: 0.92;
+  }
+  .text-display-sm {
+    font-size: 1.75rem;
+    line-height: 0.98;
+  }
+  .text-h1 {
+    font-size: 1.875rem;
+    line-height: 1;
+  }
+  .text-h2 {
+    font-size: 1.625rem;
+    line-height: 1.04;
+  }
+  .text-h3 {
+    font-size: 1.25rem;
+    line-height: 1.1;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -204,8 +369,8 @@ body {
     animation-iteration-count: infinite !important;
   }
 
-  .split-loop-active .split-char-shine {
-    animation-duration: 30s !important;
-    animation-iteration-count: infinite !important;
+  .animate-spin-slow,
+  .animate-blink-hard {
+    animation: none !important;
   }
 }

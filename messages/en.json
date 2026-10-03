@@ -5,7 +5,9 @@
     "technologies": "Technologies",
     "sending": "Sending...",
     "allRights": "All Rights Reserved.",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "hello": "Hello",
+    "endOfPage": "End of Page"
   },
   "nav": {
     "home": "Home",
@@ -19,7 +21,9 @@
     "student": "PPLG STUDENT",
     "developer": "WEB DEVELOPER",
     "freelancer": "FREELANCER",
-    "scrollDown": "Scroll Down"
+    "scrollDown": "Scroll Down",
+    "viewWork": "View My Work",
+    "letsTalk": "Let’s Talk"
   },
   "about": {
     "title": "About Me",
@@ -40,14 +44,16 @@
     "techStack": "Tech Stack",
     "myFocus": "My Focus",
     "revealHint": "Tap & drag to reveal",
-    "downloadPhoto": "Download photo"
+    "downloadPhoto": "Download photo",
+    "eyebrow": "Who Is This Guy"
   },
   "works": {
     "title1": "Selected",
     "title2": "Works",
     "subtitle": "A showcase of functional web solutions focused on real-world problems and user experience.",
     "visitSite": "Visit Site",
-    "readCaseStudy": "Read Case Study"
+    "readCaseStudy": "Read Case Study",
+    "eyebrow": "Portfolio"
   },
   "projectDetail": {
     "backToWorks": "Back to Works",
@@ -65,7 +71,8 @@
     "caseStudySuffix": " — Case Study"
   },
   "services": {
-    "title": "Services"
+    "title": "Services",
+    "eyebrow": "What I Do"
   },
   "journey": {
     "title": "My Journey",
@@ -77,7 +84,8 @@
       "education": "Education",
       "work": "Work",
       "learning": "Learning"
-    }
+    },
+    "eyebrow": "Timeline"
   },
   "techStackSection": {
     "title": "Tech Stack",
@@ -85,7 +93,8 @@
       "learning": "Learning",
       "intermediate": "Intermediate",
       "proficient": "Proficient"
-    }
+    },
+    "eyebrow": "Toolbox"
   },
   "guestbook": {
     "title": "Guestbook",
@@ -93,7 +102,8 @@
     "namePlaceholder": "Name",
     "messagePlaceholder": "Message",
     "sign": "Sign Guestbook",
-    "empty": "No messages yet. Be the first!"
+    "empty": "No messages yet. Be the first!",
+    "eyebrow": "Say Something"
   },
   "contact": {
     "title1": "Let's Start",
@@ -114,10 +124,10 @@
     },
     "messagePlaceholder": "Tell me about your project...",
     "send": "Send Message",
-    "success": "Message sent successfully!"
+    "success": "Message sent successfully!",
+    "eyebrow": "Get In Touch"
   },
   "music": {
-    "label": "Radio",
     "playlist": "Playlist",
     "close": "Close",
     "play": "Play",
@@ -130,7 +140,8 @@
     "empty": "Add your playlist"
   },
   "splash": {
-    "greeting": "Hello Everyone!"
+    "greeting": "Hello Everyone!",
+    "loading": "Loading"
   },
   "notFound": {
     "title": "Page Not Found",
@@ -164,8 +175,15 @@
       "overview": "The school needed a better way to manage group tasks across PPLG classes.",
       "problem": "Tasks and deadlines were scattered across chat groups, making it hard to track who was working on what.",
       "solution": "A centralized dashboard with per-class boards, member assignments, and deadline notifications.",
-      "features": ["Drag-and-drop task board", "Teacher and student roles", "Activity history per project"],
-      "challenges": ["Designing a flexible database schema for multiple classes", "Maintaining performance as project data grows"],
+      "features": [
+        "Drag-and-drop task board",
+        "Teacher and student roles",
+        "Activity history per project"
+      ],
+      "challenges": [
+        "Designing a flexible database schema for multiple classes",
+        "Maintaining performance as project data grows"
+      ],
       "result": "Used by 3 PPLG classes to manage group tasks for the current semester."
     },
     "portfolio": {
@@ -175,8 +193,15 @@
       "overview": "A personal portfolio to showcase projects and the learning process as a web developer.",
       "problem": "No centralized place to showcase projects to recruiters or freelance clients.",
       "solution": "An editorial website with a project index, journey timeline, and guestbook for visitor interaction.",
-      "features": ["Project case study page", "Journey timeline", "Realtime guestbook"],
-      "challenges": ["Keeping the design minimal yet distinctive", "Setting up secure Supabase RLS policies"],
+      "features": [
+        "Project case study page",
+        "Journey timeline",
+        "Realtime guestbook"
+      ],
+      "challenges": [
+        "Keeping the design minimal yet distinctive",
+        "Setting up secure Supabase RLS policies"
+      ],
       "result": "Portfolio ready to use for job applications and freelance projects."
     },
     "ecommerce": {
@@ -186,8 +211,14 @@
       "overview": "A learning project to understand component-driven development patterns.",
       "problem": "Wanted to understand how to structure scalable e-commerce components.",
       "solution": "Rebuilt several core pages: product listing, product detail, and shopping cart.",
-      "features": ["Product filtering", "Local shopping cart", "Product detail page"],
-      "challenges": ["Managing cart state without additional libraries"],
+      "features": [
+        "Product filtering",
+        "Local shopping cart",
+        "Product detail page"
+      ],
+      "challenges": [
+        "Managing cart state without additional libraries"
+      ],
       "result": "Stronger understanding of component composition and props drilling."
     },
     "russRental": {
@@ -197,8 +228,15 @@
       "overview": "Russ Rental is a car rental business that needed a web presence to showcase its fleet, explain its services, and take booking enquiries directly from potential customers.",
       "problem": "The rental business relied entirely on WhatsApp enquiries. There was no fleet catalogue that could be shared, and customers had to start a chat before seeing any actual vehicles.",
       "solution": "A company profile website with service pages, a car catalogue, a booking form wired to WhatsApp, and a Filament admin panel for managing the fleet and incoming requests.",
-      "features": ["Car fleet catalogue", "WhatsApp booking form", "Filament admin panel"],
-      "challenges": ["Running Filament on top of an already-legacy Laravel 5 app", "Deploying a PHP app to Railway without extra server configuration"],
+      "features": [
+        "Car fleet catalogue",
+        "WhatsApp booking form",
+        "Filament admin panel"
+      ],
+      "challenges": [
+        "Running Filament on top of an already-legacy Laravel 5 app",
+        "Deploying a PHP app to Railway without extra server configuration"
+      ],
       "result": "The site is live at russ-rental.up.railway.app and the fleet is now manageable straight from the admin dashboard."
     }
   },
@@ -206,17 +244,30 @@
     "webDev": {
       "title": "Website Development",
       "description": "Building responsive websites from design to deployment, using Next.js and Tailwind CSS.",
-      "deliverables": ["Landing page", "Company profile", "Portfolio", "Vercel deployment"]
+      "deliverables": [
+        "Landing page",
+        "Company profile",
+        "Portfolio",
+        "Vercel deployment"
+      ]
     },
     "webApp": {
       "title": "Web Application",
       "description": "Web applications with authentication, database, and custom features as needed.",
-      "deliverables": ["Dashboard", "Simple CRUD", "Supabase integration"]
+      "deliverables": [
+        "Dashboard",
+        "Simple CRUD",
+        "Supabase integration"
+      ]
     },
     "uiImpl": {
       "title": "UI Implementation",
       "description": "Transforming Figma designs into clean, maintainable code.",
-      "deliverables": ["Component library", "Responsive layout", "Basic accessibility"]
+      "deliverables": [
+        "Component library",
+        "Responsive layout",
+        "Basic accessibility"
+      ]
     }
   },
   "journeyData": {
@@ -260,6 +311,8 @@
     "deleteEntry": "Delete message",
     "confirmDeleteEntry": "Delete the message from \"{name}\" and all of its replies? This cannot be undone.",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "showPasscode": "Show passcode",
+    "hidePasscode": "Hide passcode"
   }
 }

@@ -5,7 +5,9 @@
     "technologies": "Teknologi",
     "sending": "Mengirim...",
     "allRights": "Hak Cipta Dilindungi.",
-    "backToHome": "Kembali ke Beranda"
+    "backToHome": "Kembali ke Beranda",
+    "hello": "Halo",
+    "endOfPage": "Halaman Penutup"
   },
   "nav": {
     "home": "Beranda",
@@ -19,7 +21,9 @@
     "student": "SISWA PPLG",
     "developer": "WEB DEVELOPER",
     "freelancer": "FREELANCER",
-    "scrollDown": "Scroll Down"
+    "scrollDown": "Scroll Down",
+    "viewWork": "Lihat Karya",
+    "letsTalk": "Mari Ngobrol"
   },
   "about": {
     "title": "Tentang Saya",
@@ -40,14 +44,16 @@
     "techStack": "Tech Stack",
     "myFocus": "Fokus Saya",
     "revealHint": "Sentuh & geser untuk reveal",
-    "downloadPhoto": "Unduh foto"
+    "downloadPhoto": "Unduh foto",
+    "eyebrow": "Siapa Saya"
   },
   "works": {
     "title1": "Selected",
     "title2": "Works",
     "subtitle": "Kumpulan solusi web fungsional yang berfokus pada masalah nyata dan pengalaman pengguna.",
     "visitSite": "Kunjungi Situs",
-    "readCaseStudy": "Baca Case Study"
+    "readCaseStudy": "Baca Case Study",
+    "eyebrow": "Portofolio"
   },
   "projectDetail": {
     "backToWorks": "Kembali ke Karya",
@@ -65,7 +71,8 @@
     "caseStudySuffix": " — Case Study"
   },
   "services": {
-    "title": "Layanan"
+    "title": "Layanan",
+    "eyebrow": "Layanan Saya"
   },
   "journey": {
     "title": "Perjalanan Saya",
@@ -77,7 +84,8 @@
       "education": "Pendidikan",
       "work": "Pekerjaan",
       "learning": "Pembelajaran"
-    }
+    },
+    "eyebrow": "Linimasa"
   },
   "techStackSection": {
     "title": "Tech Stack",
@@ -85,7 +93,8 @@
       "learning": "Belajar",
       "intermediate": "Menengah",
       "proficient": "Mahir"
-    }
+    },
+    "eyebrow": "Perkakas"
   },
   "guestbook": {
     "title": "Buku Tamu",
@@ -93,7 +102,8 @@
     "namePlaceholder": "Nama",
     "messagePlaceholder": "Pesan",
     "sign": "Tanda Tangan",
-    "empty": "Belum ada pesan. Jadilah yang pertama."
+    "empty": "Belum ada pesan. Jadilah yang pertama.",
+    "eyebrow": "Kirim Pesan"
   },
   "contact": {
     "title1": "Mari Mulai",
@@ -114,10 +124,10 @@
     },
     "messagePlaceholder": "Ceritakan tentang proyek Anda...",
     "send": "Kirim Pesan",
-    "success": "Pesan berhasil dikirim!"
+    "success": "Pesan berhasil dikirim!",
+    "eyebrow": "Hubungi Saya"
   },
   "music": {
-    "label": "Radio",
     "playlist": "Daftar Lagu",
     "close": "Tutup",
     "play": "Putar",
@@ -130,7 +140,8 @@
     "empty": "Tambahkan playlist kamu"
   },
   "splash": {
-    "greeting": "Halo Semuanya!"
+    "greeting": "Halo Semuanya!",
+    "loading": "Memuat"
   },
   "notFound": {
     "title": "Halaman Tidak Ditemukan",
@@ -164,8 +175,15 @@
       "overview": "Sekolah membutuhkan cara yang lebih rapi untuk mengelola tugas kelompok lintas kelas PPLG.",
       "problem": "Tugas dan deadline tersebar di grup chat, sulit dilacak siapa mengerjakan apa.",
       "solution": "Dashboard terpusat dengan board per kelas, assignment per anggota, dan notifikasi deadline.",
-      "features": ["Board tugas drag-and-drop", "Role guru dan siswa", "Riwayat aktivitas per proyek"],
-      "challenges": ["Merancang skema database yang fleksibel untuk banyak kelas", "Menjaga performa saat data proyek bertambah banyak"],
+      "features": [
+        "Board tugas drag-and-drop",
+        "Role guru dan siswa",
+        "Riwayat aktivitas per proyek"
+      ],
+      "challenges": [
+        "Merancang skema database yang fleksibel untuk banyak kelas",
+        "Menjaga performa saat data proyek bertambah banyak"
+      ],
       "result": "Dipakai oleh 3 kelas PPLG untuk mengelola tugas kelompok semester berjalan."
     },
     "portfolio": {
@@ -175,8 +193,15 @@
       "overview": "Portfolio pribadi untuk menunjukkan proyek dan proses belajar sebagai web developer.",
       "problem": "Belum punya tempat terpusat untuk showcase proyek ke recruiter atau klien freelance.",
       "solution": "Website editorial dengan project index, journey timeline, dan guestbook untuk interaksi pengunjung.",
-      "features": ["Halaman case study proyek", "Timeline perjalanan", "Guestbook realtime"],
-      "challenges": ["Menjaga desain tetap minimal namun distinctive", "Setup RLS policy Supabase yang aman"],
+      "features": [
+        "Halaman case study proyek",
+        "Timeline perjalanan",
+        "Guestbook realtime"
+      ],
+      "challenges": [
+        "Menjaga desain tetap minimal namun distinctive",
+        "Setup RLS policy Supabase yang aman"
+      ],
       "result": "Portfolio siap dipakai untuk melamar kerja dan proyek freelance."
     },
     "ecommerce": {
@@ -186,8 +211,14 @@
       "overview": "Proyek belajar untuk memahami pola component-driven development.",
       "problem": "Ingin memahami cara struktur komponen e-commerce yang scalable.",
       "solution": "Membangun ulang beberapa halaman inti: listing produk, detail produk, dan keranjang.",
-      "features": ["Filter produk", "Keranjang belanja lokal", "Halaman detail produk"],
-      "challenges": ["Mengelola state keranjang tanpa library tambahan"],
+      "features": [
+        "Filter produk",
+        "Keranjang belanja lokal",
+        "Halaman detail produk"
+      ],
+      "challenges": [
+        "Mengelola state keranjang tanpa library tambahan"
+      ],
       "result": "Pemahaman lebih kuat soal component composition dan props drilling."
     },
     "russRental": {
@@ -197,8 +228,15 @@
       "overview": "Russ Rental adalah bisnis rental mobil yang butuh presence web untuk menampilkan armada, menjelaskan layanan, dan menerima permintaan booking dari calon pelanggan secara langsung.",
       "problem": "Rental mobil selama ini hanya mengandalkan enquiries lewat WhatsApp. Tidak ada katalog armada yang bisa dibagikan, dan calon pelanggan harus chat dulu sebelum bisa lihat pilihan mobil.",
       "solution": "Website company profile dengan halaman layanan, katalog armada, form booking yang terhubung ke WhatsApp, serta panel admin Filament untuk mengelola armada dan permintaan.",
-      "features": ["Katalog armada mobil", "Form booking ke WhatsApp", "Panel admin Filament"],
-      "challenges": ["Menjalankan Filament di atas Laravel 5 yang sudah legacy", "Deploy aplikasi PHP ke Railway tanpa konfigurasi server tambahan"],
+      "features": [
+        "Katalog armada mobil",
+        "Form booking ke WhatsApp",
+        "Panel admin Filament"
+      ],
+      "challenges": [
+        "Menjalankan Filament di atas Laravel 5 yang sudah legacy",
+        "Deploy aplikasi PHP ke Railway tanpa konfigurasi server tambahan"
+      ],
       "result": "Website live di russ-rental.up.railway.app dan armada bisa dikelola langsung dari dashboard admin."
     }
   },
@@ -206,17 +244,30 @@
     "webDev": {
       "title": "Website Development",
       "description": "Membangun website responsif dari desain hingga deploy, menggunakan Next.js dan Tailwind CSS.",
-      "deliverables": ["Landing page", "Company profile", "Portfolio", "Deployment ke Vercel"]
+      "deliverables": [
+        "Landing page",
+        "Company profile",
+        "Portfolio",
+        "Deployment ke Vercel"
+      ]
     },
     "webApp": {
       "title": "Web Application",
       "description": "Aplikasi web dengan autentikasi, database, dan fitur custom sesuai kebutuhan.",
-      "deliverables": ["Dashboard", "CRUD sederhana", "Integrasi Supabase"]
+      "deliverables": [
+        "Dashboard",
+        "CRUD sederhana",
+        "Integrasi Supabase"
+      ]
     },
     "uiImpl": {
       "title": "UI Implementation",
       "description": "Mengubah desain Figma menjadi kode yang rapi dan mudah dikembangkan.",
-      "deliverables": ["Component library", "Responsive layout", "Aksesibilitas dasar"]
+      "deliverables": [
+        "Component library",
+        "Responsive layout",
+        "Aksesibilitas dasar"
+      ]
     }
   },
   "journeyData": {
@@ -260,6 +311,8 @@
     "deleteEntry": "Hapus pesan",
     "confirmDeleteEntry": "Hapus pesan dari \"{name}\" beserta semua balasannya? Tindakan ini tidak bisa dibatalkan.",
     "save": "Simpan",
-    "cancel": "Batal"
+    "cancel": "Batal",
+    "showPasscode": "Tampilkan passcode",
+    "hidePasscode": "Sembunyikan passcode"
   }
 }

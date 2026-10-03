@@ -24,7 +24,9 @@ export default async function GuestbookAdminPage({
 
   return (
     <ThemeProvider>
-      <main className="pt-28">
+      {/* No navbar on this route, so no top offset here — GuestbookAdmin owns
+          the full viewport and centres itself. */}
+      <main>
         <GuestbookAdmin />
       </main>
     </ThemeProvider>
