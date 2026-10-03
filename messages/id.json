@@ -274,6 +274,11 @@
     }
   },
   "journeyData": {
+    "russRental": {
+      "title": "RUSS Rental",
+      "organization": "Tugas PPLG",
+      "description": "RUSS Rental adalah platform rental mobil berbasis web yang menyediakan katalog kendaraan, informasi layanan, kategori dan transmisi mobil, serta sistem booking untuk mempermudah pengguna dalam memilih dan menyewa kendaraan."
+    },
     "portfolio": {
       "title": "Membangun Personal Portfolio",
       "organization": "Proyek Pribadi",

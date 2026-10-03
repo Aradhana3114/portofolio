@@ -274,6 +274,11 @@
     }
   },
   "journeyData": {
+    "russRental": {
+      "title": "RUSS Rental",
+      "organization": "PPLG Assignment",
+      "description": "RUSS Rental is a web-based car rental platform with a vehicle catalog, service information, car categories and transmissions, plus a booking system that makes it easier for users to choose and rent a vehicle."
+    },
     "portfolio": {
       "title": "Building Personal Portfolio",
       "organization": "Personal Project",
