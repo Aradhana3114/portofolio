@@ -39,6 +39,18 @@ export const Cursor: React.FC<CursorProps> = ({ size = 32 }) => {
   };
 
   useEffect(() => {
+    // Touch-only devices have no cursor, so skip the listeners, the rAF loop and
+    // the body `cursor: none` entirely.
+    //
+    // The `any-` prefixes are load-bearing. A plain `(pointer: fine)` query only
+    // inspects the PRIMARY input, so a touch-capable laptop reports coarse and
+    // the cursor would never start there. `any-pointer` / `any-hover` consider
+    // every attached device, so a laptop with both a touchscreen and a trackpad
+    // still gets the cursor while a phone gets nothing.
+    if (!window.matchMedia("(any-hover: hover) and (any-pointer: fine)").matches) {
+      return;
+    }
+
     const handleMouseMove = (e: MouseEvent) => {
       setVisible(true);
       setPosition({ x: e.clientX, y: e.clientY });
