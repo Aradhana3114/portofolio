@@ -140,8 +140,11 @@
     "empty": "Tambahkan playlist kamu"
   },
   "splash": {
-    "greeting": "Halo Semuanya!",
-    "loading": "Memuat"
+    "loading": "Memuat",
+    "morning": "Selamat Pagi",
+    "afternoon": "Selamat Siang",
+    "evening": "Selamat Sore",
+    "night": "Selamat Malam"
   },
   "notFound": {
     "title": "Halaman Tidak Ditemukan",

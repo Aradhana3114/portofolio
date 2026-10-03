@@ -80,7 +80,9 @@ const config: Config = {
         },
         "float-slow": {
           "0%, 100%": { transform: "translateY(0) rotate(var(--tilt, 0deg))" },
-          "50%": { transform: "translateY(-12px) rotate(var(--tilt, 0deg))" },
+          "50%": {
+            transform: "translateY(-20px) rotate(calc(var(--tilt, 0deg) + 2.5deg))",
+          },
         },
         "bob-slow": {
           "0%, 100%": { transform: "translateY(0)" },

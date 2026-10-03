@@ -140,8 +140,11 @@
     "empty": "Add your playlist"
   },
   "splash": {
-    "greeting": "Hello Everyone!",
-    "loading": "Loading"
+    "loading": "Loading",
+    "morning": "Good Morning",
+    "afternoon": "Good Afternoon",
+    "evening": "Good Evening",
+    "night": "Good Night"
   },
   "notFound": {
     "title": "Page Not Found",

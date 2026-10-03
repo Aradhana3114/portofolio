@@ -81,6 +81,17 @@ body {
   overflow-x: hidden;
 }
 
+/* The inverted cursor (src/components/ui/inverted-cursor.tsx) is the only pointer
+   on the page. Setting it on body alone is not enough: `cursor` is inherited, so
+   any element declaring its own value — cursor-pointer on buttons and links,
+   cursor-text on copy, and FluidReveal's inline style — wins and the native
+   arrow reappears on top of the custom dot. !important is required to beat
+   those inline styles too. */
+body,
+body * {
+  cursor: none !important;
+}
+
 ::selection {
   background: rgb(var(--brutal-yellow));
   color: rgb(var(--brutal-ink));

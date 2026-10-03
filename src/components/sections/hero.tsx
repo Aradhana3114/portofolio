@@ -46,11 +46,11 @@ export function Hero() {
       {/* Halftone backdrop */}
       <div className="bg-halftone absolute inset-0 -z-10" aria-hidden="true" />
       <div
-        className="absolute -left-16 top-24 -z-10 h-40 w-40 rounded-full border-[3px] border-border bg-brutal-pink/40 motion-safe:animate-float-slow sm:h-52 sm:w-52"
+        className="absolute -left-16 top-24 -z-10 h-40 w-40 rounded-full border-[3px] border-border bg-brutal-pink/40 animate-float-slow sm:h-52 sm:w-52"
         aria-hidden="true"
       />
       <div
-        className="absolute -right-12 bottom-28 -z-10 h-32 w-32 rounded-full border-[3px] border-border bg-brutal-blue/40 motion-safe:animate-float-slow sm:h-44 sm:w-44"
+        className="absolute -right-12 bottom-28 -z-10 h-32 w-32 rounded-full border-[3px] border-border bg-brutal-blue/40 animate-float-slow sm:h-44 sm:w-44"
         style={{ ["--tilt" as string]: "4deg", animationDelay: "1.2s" } as React.CSSProperties}
         aria-hidden="true"
       />

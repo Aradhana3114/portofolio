@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { MusicPlayer } from "@/components/music-player";
 import { Providers } from "@/components/providers";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { Cursor } from "@/components/ui/inverted-cursor";
 import "../globals.css";
 
 const displayFont = Bricolage_Grotesque({
@@ -63,6 +64,7 @@ export default async function LocaleLayout({
             <ScrollProgress />
             {children}
             <MusicPlayer />
+            <Cursor />
           </Providers>
         </NextIntlClientProvider>
       </body>
