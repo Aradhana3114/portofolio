@@ -24,6 +24,11 @@ const bodyFont = Inter({
 });
 
 export const metadata: Metadata = {
+  title: {
+    default: "My Portofolio",
+    template: "%s — My Portofolio",
+  },
+  description: "Aradhana Miftah Hermawan — personal portfolio of a PPLG student and web developer.",
   icons: {
     icon: [
       { url: "/images/mark-ink.png", type: "image/png" },
