@@ -29,6 +29,8 @@ type Splat = { x: number; y: number; dx: number; dy: number };
 /** Max travel (px) and duration (ms) still counted as a tap, not a scroll. */
 const TAP_SLOP = 12;
 const TAP_MS = 400;
+/** Duration of the tap-to-toggle ink wash. */
+const REVEAL_MS = 620;
 
 type DoubleFBO = {
   read: { tex: WebGLTexture; fbo: WebGLFramebuffer; w: number; h: number };
@@ -188,6 +190,7 @@ uniform vec2 uFocusBase;
 uniform vec2 uFocusReveal;
 uniform float uByte;
 uniform float uTouchReveal;
+uniform vec2 uTouchCenter;
 out vec4 fragColor;
 
 // Cover crop with focus: the focus point in texture stays at canvas center.
@@ -220,11 +223,20 @@ void main() {
   float signal = max(dye * 1.4, velLen * 2.5);
   float m = smoothstep(uThreshold, uThreshold + 0.1, signal);
 
-  // Tap-to-toggle override. Splatting the dye grid was not enough to reach
-  // m == 1 everywhere (cell corners land below uThreshold, and the dye decays
-  // every frame), so a tap pins the mix to fully revealed instead of relying
-  // on the simulation to reach a stable state.
-  m = max(m, uTouchReveal);
+  // Tap-to-toggle override. Splatting the dye grid was never enough to reach
+  // m == 1 everywhere (cell corners land below uThreshold and the dye decays
+  // every frame), so a tap drives its own wash: a soft-edged ink front that
+  // grows out of the touch point as uTouchReveal animates 0 -> 1, and retreats
+  // back into it on the way down. The radius must exceed the furthest possible
+  // distance (sqrt(2) across the unit square) by the time it is fully open,
+  // otherwise the corners never reach 1 and the base photo leaks through them.
+  float wash = uTouchReveal <= 0.0
+    ? 0.0
+    : 1.0 - smoothstep(
+        uTouchReveal * 1.5,
+        uTouchReveal * 1.5 + 0.2,
+        distance(vUv, uTouchCenter));
+  m = max(m, wash);
 
   float glow = 0.0;
   if (uEdgeGlow == 1) {
@@ -625,7 +637,13 @@ export function FluidReveal({
     // Tap-to-toggle state lives as locals so the effect keeps its
     // [baseSrc, revealSrc] deps; `revealed` mirrors it into React for a11y.
     let touchRevealed = false;
-    let touchRevealAmount = 0;
+    // Animated 0..1 that drives the shader's ink wash. Tweened in frame()
+    // rather than snapped so a tap reads as ink spreading, not a hard cut.
+    let touchReveal = 0;
+    let touchRevealTarget = 0;
+    let touchRevealFrom = 0;
+    let touchRevealT0 = 0;
+    let touchCenter = { x: 0.5, y: 0.5 };
     // Set when the GL context dies mid-session. The React onClick fallback
     // takes over from that point, so the internal handlers must stand down or
     // a single tap would toggle twice and land back on the base photo.
@@ -796,7 +814,10 @@ export function FluidReveal({
       gl!.uniform1i(progDisplay.u.uVelocity!, bindTex(2, velocity.read.tex));
       gl!.uniform1i(progDisplay.u.uDye!, bindTex(3, dye.read.tex));
       gl!.uniform1f(progDisplay.u.uThreshold!, PARAMS.threshold);
-      if (progDisplay.u.uTouchReveal) gl!.uniform1f(progDisplay.u.uTouchReveal, touchRevealAmount);
+      if (progDisplay.u.uTouchReveal) gl!.uniform1f(progDisplay.u.uTouchReveal, touchReveal);
+      if (progDisplay.u.uTouchCenter) {
+        gl!.uniform2f(progDisplay.u.uTouchCenter, touchCenter.x, touchCenter.y);
+      }
       gl!.uniform1i(progDisplay.u.uEdgeGlow!, cfg.edgeGlow ? 1 : 0);
       gl!.uniform2f(progDisplay.u.uScaleBase!, sb[0], sb[1]);
       gl!.uniform2f(progDisplay.u.uScaleReveal!, sr[0], sr[1]);
@@ -941,10 +962,15 @@ export function FluidReveal({
       }
     }
 
-    function setTouchRevealed(next: boolean) {
+    function setTouchRevealed(next: boolean, center?: { x: number; y: number }) {
       touchRevealed = next;
-      touchRevealAmount = next ? 1 : 0;
       setRevealed(next);
+      if (center) touchCenter = center;
+
+      touchRevealFrom = touchReveal;
+      touchRevealTarget = next ? 1 : 0;
+      touchRevealT0 = performance.now();
+
       fading = false;
       clearBoost = 0;
       lastMove = performance.now();
@@ -955,16 +981,11 @@ export function FluidReveal({
         fillReveal();
       } else {
         splats.length = 0;
-        clearFluid();
       }
 
-      // Render immediately: uTouchReveal already pins the mix, so the photo
-      // flips on this frame without waiting for the simulation to settle.
-      render();
-
-      // `inside` stays false so the loop drains the queued splats and then
+      // `inside` stays false so the loop drives the tween and then
       // self-terminates on IDLE_STOP_MS. The last frame persists on the
-      // canvas, so the revealed photo stays on screen without burning frames.
+      // canvas, so the finished reveal stays on screen without burning frames.
       inside = false;
       startLoop();
     }
@@ -988,7 +1009,9 @@ export function FluidReveal({
       const dur = performance.now() - touchStartAt;
       // Anything past this is a scroll or a drag, not a tap.
       if (dist > TAP_SLOP || dur > TAP_MS) return;
-      setTouchRevealed(!touchRevealed);
+      // The ink spreads from wherever the finger landed.
+      const { px, py } = clientToUv(t.clientX, t.clientY);
+      setTouchRevealed(!touchRevealed, { x: px, y: py });
     }
 
     // touchcancel means the browser took the gesture (scrolling, system
@@ -1023,13 +1046,22 @@ export function FluidReveal({
     function frame(now: number) {
       raf = 0;
       if (disposed) return;
-      if (!inside && !fading && now - lastActive > IDLE_STOP_MS) return;
+      const tweening = touchReveal !== touchRevealTarget;
+      if (!inside && !fading && !tweening && now - lastActive > IDLE_STOP_MS) return;
       if (now - last < PARAMS.frameInterval) {
         raf = requestAnimationFrame(frame);
         return;
       }
       const dt = Math.min((now - last) / 1000, 0.033);
       last = now;
+      if (tweening) {
+        // easeOutCubic: the ink front shoots out then settles, instead of the
+        // uniform linear wipe that read as a slideshow crossfade.
+        const t = Math.min(1, (now - touchRevealT0) / REVEAL_MS);
+        const eased = 1 - Math.pow(1 - t, 3);
+        touchReveal = touchRevealFrom + (touchRevealTarget - touchRevealFrom) * eased;
+        if (t >= 1) touchReveal = touchRevealTarget;
+      }
       idleSplats(dt);
       stepFluid(PARAMS.dt);
       render();
@@ -1206,7 +1238,9 @@ export function FluidReveal({
       />
       {(() => {
         const activeHint = coarse ? hintTouch ?? hint : hint;
-        if (!activeHint) return null;
+        // No hint over an already-revealed photo — it would sit on the
+        // artwork and keep telling you to tap something that is already tapped.
+        if (!activeHint || revealed) return null;
         return (
           <div className="pointer-events-none absolute bottom-2 left-0 right-0 text-center text-[10px] tracking-wide text-white/45 select-none">
             {activeHint}

@@ -58,14 +58,20 @@ export function About() {
                   hintTouch={t("about.revealHintTouch")}
                   baseFocus={{ x: 0.478, y: 0.727 }}
                   baseZoom={1.55}
-                  revealFocus={{ x: 0.493, y: 0.794 }}
-                  revealZoom={1.9}
+                  // spiderman.png is 441x500. revealZoom 1.9 sampled only a
+                  // 232x232 square out of it — a tight crop that cut the body
+                  // off at the chest. 1.05 samples ~420x420, so the whole
+                  // figure fits with a hair of margin.
+                  revealFocus={{ x: 0.5, y: 0.49 }}
+                  revealZoom={1.05}
                   fadeOnLeave
                   idleAnimation
                   edgeGlow
                 />
-                <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center gap-2 border-b-[3px] border-border bg-foreground px-4 py-2">
-                  <span className="font-display text-caption font-extrabold uppercase tracking-tight text-background">
+                {/* Was a full-width bar that sat on top of the photo's head. Now a compact
+                    corner badge so it barely covers the artwork. */}
+                <div className="pointer-events-none absolute left-3 top-3 z-10 flex items-center gap-2 border-[3px] border-border bg-foreground px-3 py-1.5">
+                  <span className="font-display text-metadata font-extrabold uppercase tracking-tight text-background">
                     @{profile.name.split(" ")[0].toLowerCase()}
                   </span>
                 </div>
