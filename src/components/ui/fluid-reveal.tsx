@@ -13,8 +13,6 @@ type FluidRevealProps = {
   idleAnimation?: boolean;
   edgeGlow?: boolean;
   hint?: string;
-  /** Hint shown on touch devices, where hover is unavailable. Falls back to `hint`. */
-  hintTouch?: string;
   /** Texture-space point (0–1) kept at canvas center. Default centers the crop. */
   baseFocus?: Focus;
   revealFocus?: Focus;
@@ -25,12 +23,6 @@ type FluidRevealProps = {
 };
 
 type Splat = { x: number; y: number; dx: number; dy: number };
-
-/** Max travel (px) and duration (ms) still counted as a tap, not a scroll. */
-const TAP_SLOP = 12;
-const TAP_MS = 400;
-/** Duration of the tap-to-toggle ink wash. */
-const REVEAL_MS = 620;
 
 type DoubleFBO = {
   read: { tex: WebGLTexture; fbo: WebGLFramebuffer; w: number; h: number };
@@ -189,8 +181,7 @@ uniform vec2 uScaleReveal;
 uniform vec2 uFocusBase;
 uniform vec2 uFocusReveal;
 uniform float uByte;
-uniform float uTouchReveal;
-uniform vec2 uTouchCenter;
+in vec2 vUv;
 out vec4 fragColor;
 
 // Cover crop with focus: the focus point in texture stays at canvas center.
@@ -222,21 +213,6 @@ void main() {
   float dye = texture(uDye, vUv).r;
   float signal = max(dye * 1.4, velLen * 2.5);
   float m = smoothstep(uThreshold, uThreshold + 0.1, signal);
-
-  // Tap-to-toggle override. Splatting the dye grid was never enough to reach
-  // m == 1 everywhere (cell corners land below uThreshold and the dye decays
-  // every frame), so a tap drives its own wash: a soft-edged ink front that
-  // grows out of the touch point as uTouchReveal animates 0 -> 1, and retreats
-  // back into it on the way down. The radius must exceed the furthest possible
-  // distance (sqrt(2) across the unit square) by the time it is fully open,
-  // otherwise the corners never reach 1 and the base photo leaks through them.
-  float wash = uTouchReveal <= 0.0
-    ? 0.0
-    : 1.0 - smoothstep(
-        uTouchReveal * 1.5,
-        uTouchReveal * 1.5 + 0.2,
-        distance(vUv, uTouchCenter));
-  m = max(m, wash);
 
   float glow = 0.0;
   if (uEdgeGlow == 1) {
@@ -342,7 +318,6 @@ export function FluidReveal({
   idleAnimation = true,
   edgeGlow = true,
   hint,
-  hintTouch,
   baseFocus = { x: 0.5, y: 0.38 },
   revealFocus = { x: 0.5, y: 0.3 },
   baseZoom = 1,
@@ -351,29 +326,11 @@ export function FluidReveal({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [glReady, setGlReady] = useState(false);
-  const [revealed, setRevealed] = useState(false);
-  const [glFailed, setGlFailed] = useState(false);
-  const [coarse, setCoarse] = useState(false);
-  // The toggle itself lives inside the WebGL effect (it owns the simulation).
-  // This ref lets the keyboard handler reach it without re-running the effect.
-  const toggleRef = useRef<() => void>(() => {});
   const propsRef = useRef({ fadeOnLeave, idleAnimation, edgeGlow, baseFocus, revealFocus, baseZoom, revealZoom });
   propsRef.current = { fadeOnLeave, idleAnimation, edgeGlow, baseFocus, revealFocus, baseZoom, revealZoom };
 
-  // "Tap & drag" is meaningless on a phone and "hover" is meaningless there
-  // too, so the hint follows whichever input the device actually has.
-  useEffect(() => {
-    const mq = window.matchMedia("(any-pointer: coarse)");
-    setCoarse(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setCoarse(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  // Reset the toggle whenever the artwork changes.
   useEffect(() => {
     setGlReady(false);
-    setRevealed(false);
   }, [baseSrc, revealSrc]);
 
   useEffect(() => {
@@ -391,12 +348,10 @@ export function FluidReveal({
     });
     if (!gl) {
       console.error("FluidReveal: WebGL2 unavailable");
-      setGlFailed(true);
       return;
     }
     if (gl.isContextLost()) {
       console.error("FluidReveal: context lost at init");
-      setGlFailed(true);
       return;
     }
 
@@ -437,7 +392,6 @@ export function FluidReveal({
       progDisplay = createProgram(gl, FRAG_DISPLAY);
     } catch (e) {
       console.error("FluidReveal: shader/program init failed", e);
-      setGlFailed(true);
       return;
     }
 
@@ -634,23 +588,6 @@ export function FluidReveal({
     let rectCache: DOMRect | null = null;
     let rectRaf = 0;
     const IDLE_STOP_MS = 900;
-    // Tap-to-toggle state lives as locals so the effect keeps its
-    // [baseSrc, revealSrc] deps; `revealed` mirrors it into React for a11y.
-    let touchRevealed = false;
-    // Animated 0..1 that drives the shader's ink wash. Tweened in frame()
-    // rather than snapped so a tap reads as ink spreading, not a hard cut.
-    let touchReveal = 0;
-    let touchRevealTarget = 0;
-    let touchRevealFrom = 0;
-    let touchRevealT0 = 0;
-    let touchCenter = { x: 0.5, y: 0.5 };
-    // Set when the GL context dies mid-session. The React onClick fallback
-    // takes over from that point, so the internal handlers must stand down or
-    // a single tap would toggle twice and land back on the base photo.
-    let glDead = false;
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartAt = 0;
 
     function refreshRect() {
       rectRaf = 0;
@@ -814,10 +751,6 @@ export function FluidReveal({
       gl!.uniform1i(progDisplay.u.uVelocity!, bindTex(2, velocity.read.tex));
       gl!.uniform1i(progDisplay.u.uDye!, bindTex(3, dye.read.tex));
       gl!.uniform1f(progDisplay.u.uThreshold!, PARAMS.threshold);
-      if (progDisplay.u.uTouchReveal) gl!.uniform1f(progDisplay.u.uTouchReveal, touchReveal);
-      if (progDisplay.u.uTouchCenter) {
-        gl!.uniform2f(progDisplay.u.uTouchCenter, touchCenter.x, touchCenter.y);
-      }
       gl!.uniform1i(progDisplay.u.uEdgeGlow!, cfg.edgeGlow ? 1 : 0);
       gl!.uniform2f(progDisplay.u.uScaleBase!, sb[0], sb[1]);
       gl!.uniform2f(progDisplay.u.uScaleReveal!, sr[0], sr[1]);
@@ -847,9 +780,6 @@ export function FluidReveal({
     }
 
     function setPointer(e: PointerEvent) {
-      // A finger dragging to scroll the page must not smear ink across it.
-      // Touch input is handled exclusively by the tap-to-toggle path below.
-      if (e.pointerType === "touch") return;
       wake();
       fading = false;
       const { px, py } = clientToUv(e.clientX, e.clientY);
@@ -867,10 +797,6 @@ export function FluidReveal({
     }
 
     function onPointerDown(e: PointerEvent) {
-      // Touch drives the tap-to-toggle path only. Capturing the pointer here
-      // would retarget every subsequent pointer event to the container, which
-      // swallowed taps on anything inside it.
-      if (e.pointerType === "touch") return;
       wake();
       fading = false;
       const { px, py } = clientToUv(e.clientX, e.clientY);
@@ -904,7 +830,6 @@ export function FluidReveal({
     }
 
     function onPointerLeave() {
-      if (touchRevealed) return;
       inside = false;
       if (e0Type === "mouse") {
         scheduleFade();
@@ -931,94 +856,42 @@ export function FluidReveal({
 
     function onPointerUp() {
       lastMove = performance.now();
-      // A tap that is about to re-open the reveal fires pointerup BEFORE
-      // touchend, so this still sees the previous state. Leaving the canvas
-      // must not fade a reveal the user deliberately switched on.
-      if (touchRevealed) return;
       if (e0Type === "touch" || e0Type === "pen") {
         inside = false;
         scheduleFade();
       }
     }
 
-/* ---------- Touch: tap to toggle the reveal ----------
-       There is no hover on a phone, so the drag-to-paint interaction was
-       unreachable. A tap now flips the whole image between base and reveal.
-       Nothing here calls preventDefault(): doing so on touchstart suppresses
-       the synthesized click, and with touch-action: pan-y the browser keeps
-       ownership of vertical scrolling, so a finger resting on the photo no
-       longer freezes the page. */
-
-    function fillReveal() {
-      // Dye drives the base/reveal mix in the display shader, so the whole
-      // surface has to be splatted — a single tap-sized splat would only
-      // reveal a small patch. Kept for the ink "settle" after a tap.
-      const cols = 9;
-      const rows = 9;
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          queueSplat((x + 0.5) / cols, (y + 0.5) / rows, 0.002, 0.002);
-        }
-      }
-    }
-
-    function setTouchRevealed(next: boolean, center?: { x: number; y: number }) {
-      touchRevealed = next;
-      setRevealed(next);
-      if (center) touchCenter = center;
-
-      touchRevealFrom = touchReveal;
-      touchRevealTarget = next ? 1 : 0;
-      touchRevealT0 = performance.now();
-
-      fading = false;
-      clearBoost = 0;
-      lastMove = performance.now();
-      lastActive = performance.now();
-
-      if (next) {
-        initSim();
-        fillReveal();
-      } else {
-        splats.length = 0;
-      }
-
-      // `inside` stays false so the loop drives the tween and then
-      // self-terminates on IDLE_STOP_MS. The last frame persists on the
-      // canvas, so the finished reveal stays on screen without burning frames.
-      inside = false;
-      startLoop();
-    }
-
-    // Expose the toggle to the keyboard handler rendered outside this effect.
-    toggleRef.current = () => setTouchRevealed(!touchRevealed);
-
-    function onTouchStart(e: TouchEvent) {
+    function onTouchMove(e: TouchEvent) {
       const t = e.touches[0];
       if (!t) return;
-      touchStartX = t.clientX;
-      touchStartY = t.clientY;
-      touchStartAt = performance.now();
+      setPointer({
+        clientX: t.clientX,
+        clientY: t.clientY,
+      } as PointerEvent);
+      e.preventDefault();
     }
 
-    function onTouchEnd(e: TouchEvent) {
-      if (glDead) return;
-      const t = e.changedTouches[0];
+    function onTouchStart(e: TouchEvent) {
+      wake();
+      const t = e.touches[0];
       if (!t) return;
-      const dist = Math.hypot(t.clientX - touchStartX, t.clientY - touchStartY);
-      const dur = performance.now() - touchStartAt;
-      // Anything past this is a scroll or a drag, not a tap.
-      if (dist > TAP_SLOP || dur > TAP_MS) return;
-      // The ink spreads from wherever the finger landed.
       const { px, py } = clientToUv(t.clientX, t.clientY);
-      setTouchRevealed(!touchRevealed, { x: px, y: py });
+      e0Type = "touch";
+      lastX = px;
+      lastY = py;
+      inside = true;
+      clearBoost = 0;
+      window.clearTimeout(leaveTimer);
+      lastMove = performance.now();
+      queueSplat(px, py, 0, 0);
+      queueSplat(px, py, 0.002, 0.002);
+      e.preventDefault();
     }
 
-    // touchcancel means the browser took the gesture (scrolling, system
-    // gesture). It must NOT toggle — binding it to onTouchEnd could fire both
-    // events for one tap and flip straight back to the base photo.
-    function onTouchCancel() {
-      touchStartAt = 0;
+    function onTouchEnd() {
+      inside = false;
+      scheduleFade();
     }
 
     function onResize() {
@@ -1046,22 +919,13 @@ export function FluidReveal({
     function frame(now: number) {
       raf = 0;
       if (disposed) return;
-      const tweening = touchReveal !== touchRevealTarget;
-      if (!inside && !fading && !tweening && now - lastActive > IDLE_STOP_MS) return;
+      if (!inside && !fading && now - lastActive > IDLE_STOP_MS) return;
       if (now - last < PARAMS.frameInterval) {
         raf = requestAnimationFrame(frame);
         return;
       }
       const dt = Math.min((now - last) / 1000, 0.033);
       last = now;
-      if (tweening) {
-        // easeOutCubic: the ink front shoots out then settles, instead of the
-        // uniform linear wipe that read as a slideshow crossfade.
-        const t = Math.min(1, (now - touchRevealT0) / REVEAL_MS);
-        const eased = 1 - Math.pow(1 - t, 3);
-        touchReveal = touchRevealFrom + (touchRevealTarget - touchRevealFrom) * eased;
-        if (t >= 1) touchReveal = touchRevealTarget;
-      }
       idleSplats(dt);
       stepFluid(PARAMS.dt);
       render();
@@ -1075,9 +939,10 @@ export function FluidReveal({
     evTarget.addEventListener("pointerleave", onPointerLeave, { capture: true });
     evTarget.addEventListener("pointerup", onPointerUp, { capture: true });
     evTarget.addEventListener("pointercancel", onPointerLeave, { capture: true });
-    evTarget.addEventListener("touchstart", onTouchStart, { passive: true, capture: true });
+    evTarget.addEventListener("touchstart", onTouchStart, { passive: false, capture: true });
+    evTarget.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
     evTarget.addEventListener("touchend", onTouchEnd, { capture: true });
-    evTarget.addEventListener("touchcancel", onTouchCancel, { capture: true });
+    evTarget.addEventListener("touchcancel", onTouchEnd, { capture: true });
     window.addEventListener("blur", onPointerLeave);
     window.addEventListener("scroll", scheduleRectRefresh, { passive: true });
     window.addEventListener("resize", scheduleRectRefresh, { passive: true });
@@ -1119,9 +984,7 @@ export function FluidReveal({
     function onContextLost(e: Event) {
       e.preventDefault();
       disposed = true;
-      glDead = true;
       setGlReady(false);
-      setGlFailed(true);
     }
     canvas.addEventListener("webglcontextlost", onContextLost);
 
@@ -1160,8 +1023,9 @@ export function FluidReveal({
       evTarget.removeEventListener("pointerup", onPointerUp, { capture: true });
       evTarget.removeEventListener("pointercancel", onPointerLeave, { capture: true });
       evTarget.removeEventListener("touchstart", onTouchStart, { capture: true });
+      evTarget.removeEventListener("touchmove", onTouchMove, { capture: true });
       evTarget.removeEventListener("touchend", onTouchEnd, { capture: true });
-      evTarget.removeEventListener("touchcancel", onTouchCancel, { capture: true });
+      evTarget.removeEventListener("touchcancel", onTouchEnd, { capture: true });
       window.removeEventListener("blur", onPointerLeave);
       canvas.removeEventListener("webglcontextlost", onContextLost);
 
@@ -1176,41 +1040,11 @@ export function FluidReveal({
     };
   }, [baseSrc, revealSrc]);
 
-// pan-y (not none): the browser keeps ownership of vertical scrolling, so
-  // dragging a finger across the photo scrolls the page instead of freezing
-  // it. Tap-to-toggle still works because nothing is prevented.
-  //
-  // When WebGL2 is unavailable the effect bails out before installing any
-  // touch listeners, so the fallback below drives the toggle from React and
-  // crossfades two plain <img> layers instead of the canvas.
-  const interactive = glReady || glFailed;
-  const toggle = () => {
-    if (glReady) {
-      toggleRef.current();
-      return;
-    }
-    setRevealed((v) => !v);
-  };
-
   return (
     <div
       ref={containerRef}
-      className={`relative aspect-square w-full overflow-hidden rounded-lg bg-black select-none ${glReady ? "touch-pan-y" : ""} ${className}`}
-      style={{ cursor: glReady && !coarse ? "none" : "auto" }}
-      role={interactive ? "button" : undefined}
-      tabIndex={interactive ? 0 : undefined}
-      aria-pressed={interactive ? revealed : undefined}
-      aria-label={coarse ? (hintTouch ?? hint) : undefined}
-      onClick={glFailed ? toggle : undefined}
-      onKeyDown={
-        interactive
-          ? (e) => {
-              if (e.key !== "Enter" && e.key !== " ") return;
-              e.preventDefault();
-              toggle();
-            }
-          : undefined
-      }
+      className={`relative aspect-square w-full overflow-hidden rounded-lg bg-black select-none ${glReady ? "touch-none" : ""} ${className}`}
+      style={{ cursor: glReady ? "none" : "auto" }}
     >
       <img
         src={baseSrc}
@@ -1219,34 +1053,17 @@ export function FluidReveal({
         className="absolute inset-0 h-full w-full object-cover select-none"
         style={{ objectPosition: `${baseFocus.x * 100}% ${(1 - baseFocus.y) * 100}%` }}
       />
-      {glFailed ? (
-        <img
-          src={revealSrc}
-          alt=""
-          draggable={false}
-          className={`absolute inset-0 h-full w-full object-cover select-none transition-opacity duration-500 ${
-            revealed ? "opacity-100" : "opacity-0"
-          }`}
-          style={{ objectPosition: `${revealFocus.x * 100}% ${(1 - revealFocus.y) * 100}%` }}
-        />
-      ) : null}
       <canvas
         ref={canvasRef}
         aria-hidden={!glReady}
         className={`absolute inset-0 h-full w-full ${glReady ? "opacity-100" : "pointer-events-none opacity-0"}`}
-        style={{ touchAction: glReady ? "pan-y" : "auto" }}
+        style={{ touchAction: glReady ? "none" : "auto" }}
       />
-      {(() => {
-        const activeHint = coarse ? hintTouch ?? hint : hint;
-        // No hint over an already-revealed photo — it would sit on the
-        // artwork and keep telling you to tap something that is already tapped.
-        if (!activeHint || revealed) return null;
-        return (
-          <div className="pointer-events-none absolute bottom-2 left-0 right-0 text-center text-[10px] tracking-wide text-white/45 select-none">
-            {activeHint}
-          </div>
-        );
-      })()}
+      {hint ? (
+        <div className="pointer-events-none absolute bottom-2 left-0 right-0 text-center text-[10px] tracking-wide text-white/45 select-none">
+          {hint}
+        </div>
+      ) : null}
     </div>
   );
 }
