@@ -218,7 +218,9 @@ void main() {
   if (uEdgeGlow == 1) {
     float e = abs(signal - uThreshold);
     glow = (1.0 - smoothstep(0.0, 0.15, e)) * m * (1.0 - m) * 4.0;
-    glow = clamp(glow, 0.0, 1.0) * 0.65;
+    // Added on top of the mix, so at full strength it washes the reveal artwork
+    // out entirely. Kept as a thin rim so the ink edge still reads as a glow.
+    glow = clamp(glow, 0.0, 1.0) * 0.22;
   }
 
   // transparent PNG holes become black (matches me.png bg) so base ears do not bleed through
@@ -881,6 +883,18 @@ export function FluidReveal({
       }
     }
 
+    // A single splat at PARAMS.cursorSize is a ~20% wide disc, which on a phone
+    // reads as "nothing happened". Fan a small cluster around the tap point so
+    // the reveal is an unmistakable patch.
+    function queueTapCluster(px: number, py: number) {
+      const S = 0.075;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          queueSplat(px + dx * S, py + dy * S, 0, 0);
+        }
+      }
+    }
+
     function onTouchMove(e: TouchEvent) {
       const t = e.touches[0];
       if (!t) return;
@@ -933,10 +947,9 @@ export function FluidReveal({
         lastActive = performance.now();
         inside = touchLatched;
         if (touchLatched) {
-          // Re-splat at the tap point so the latch reopens the reveal even if
+          // Re-splat around the tap point so the latch reopens the reveal even if
           // the previous tap left the dye decayed.
-          queueSplat(feedX, feedY, 0, 0);
-          queueSplat(feedX, feedY, 0.002, 0.002);
+          queueTapCluster(feedX, feedY);
           startLoop();
         } else {
           scheduleFade();
@@ -994,7 +1007,7 @@ export function FluidReveal({
       // small feed the photo fades out seconds after the tap and looks broken.
       if (touchLatched && now - lastFeed > 150) {
         lastFeed = now;
-        queueSplat(feedX, feedY, 0, 0);
+        queueTapCluster(feedX, feedY);
       }
       stepFluid(PARAMS.dt);
       render();
