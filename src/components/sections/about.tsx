@@ -54,7 +54,6 @@ export function About() {
                 <FluidReveal
                   baseSrc="/images/me/me.png"
                   revealSrc="/images/me/spiderman.png"
-                  hint={t("about.revealHint")}
                   baseFocus={{ x: 0.478, y: 0.727 }}
                   baseZoom={1.55}
                   revealFocus={{ x: 0.493, y: 0.794 }}
@@ -63,8 +62,11 @@ export function About() {
                   idleAnimation
                   edgeGlow
                 />
-                <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center gap-2 border-b-[3px] border-border bg-foreground px-4 py-2">
-                  <span className="font-display text-caption font-extrabold uppercase tracking-tight text-background">
+                {/* Sits on top of the photo, so on a narrow screen the 16px
+                    handle and py-2 ate ~14% of the frame height and covered the
+                    top of the head. Trimmed below sm; desktop is untouched. */}
+                <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center gap-2 border-b-[3px] border-border bg-foreground px-3 py-1.5 sm:px-4 sm:py-2">
+                  <span className="font-display text-metadata font-extrabold uppercase tracking-tight text-background sm:text-caption">
                     @{profile.name.split(" ")[0].toLowerCase()}
                   </span>
                 </div>

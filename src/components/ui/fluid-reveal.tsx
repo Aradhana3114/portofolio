@@ -312,7 +312,7 @@ const PARAMS = {
   frameInterval: 25,
 };
 
-export function FluidReveal({
+function WebGLReveal({
   baseSrc,
   revealSrc,
   className = "",
@@ -662,21 +662,30 @@ export function FluidReveal({
       if (!velocity || !pressure || !dye) return;
       gl!.useProgram(progClear.p);
       gl!.bindVertexArray(vao);
-      const targets = [
-        velocity.read,
-        velocity.write,
-        pressure.read,
-        pressure.write,
-        dye.read,
-        dye.write,
-      ];
-      for (const t of targets) {
-        gl!.uniform1i(progClear.u.uTexture!, bindTex(0, t.tex));
-        const isDye = dye && (t === dye.read || t === dye.write);
-        gl!.uniform1f(progClear.u.uValue!, 0);
-        if (progClear.u.uByte) gl!.uniform1f(progClear.u.uByte!, isDye ? 0 : byteFlag);
-        blit(t);
-      }
+
+      // A texture cannot be sampled and rendered into at the same time. The
+      // original version bound `t.tex` to a texture unit and then blitted into
+      // `t`'s own framebuffer, which is a feedback loop: the driver rejects the
+      // draw with GL_INVALID_OPERATION and the clear silently never happens. The
+      // leftover dye then only decayed by the slow per-frame dissipation and
+      // froze on screen once the loop idled, leaving a band of the reveal
+      // artwork along the bottom edge of the photo.
+      //
+      // Ping-pong instead: clear the write buffer from the read buffer, swap,
+      // repeat. Two rounds zero both halves with no feedback.
+      const clearPair = (pair: DoubleFBO, isDye: boolean) => {
+        for (let i = 0; i < 2; i++) {
+          gl!.uniform1i(progClear.u.uTexture!, bindTex(0, pair.read.tex));
+          gl!.uniform1f(progClear.u.uValue!, 0);
+          if (progClear.u.uByte) gl!.uniform1f(progClear.u.uByte!, isDye ? 0 : byteFlag);
+          blit(pair.write);
+          pair.swap();
+        }
+      };
+
+      clearPair(velocity, false);
+      clearPair(pressure, false);
+      clearPair(dye, true);
     }
 
     function stepFluid(dt: number) {
@@ -1148,4 +1157,53 @@ export function FluidReveal({
       ) : null}
     </div>
   );
+}
+
+/**
+ * Touch devices get the photograph and nothing else.
+ *
+ * The fluid reveal is a hover interaction: it paints ink wherever the pointer
+ * moves. There is no hover on a phone, so on touch it could only be driven by
+ * a tap or a drag, and every way of wiring that up fought the browser — the
+ * gesture handlers had to suppress the synthesised click and claim
+ * touch-action, which is what made the photo feel unresponsive. Rather than
+ * ship a worse version of an effect that does not exist on touch, touch devices
+ * render the still photo: no WebGL context, no listeners, no tap target, and
+ * none of the tap-vs-scroll ambiguity that came with them.
+ *
+ * The wrapper keeps the exact same box, so the layout is untouched.
+ */
+function StaticPhoto({ baseSrc, className = "", baseFocus = { x: 0.5, y: 0.38 } }: FluidRevealProps) {
+  return (
+    <div className={`relative aspect-square w-full overflow-hidden rounded-lg bg-black select-none ${className}`}>
+      <img
+        src={baseSrc}
+        alt=""
+        draggable={false}
+        className="absolute inset-0 h-full w-full object-cover select-none"
+        style={{ objectPosition: `${baseFocus.x * 100}% ${(1 - baseFocus.y) * 100}%` }}
+      />
+    </div>
+  );
+}
+
+export function FluidReveal(props: FluidRevealProps) {
+  // `pointer: coarse` AND `hover: none` together means a real phone or tablet.
+  // A touchscreen laptop still reports hover through its trackpad, so it keeps
+  // the effect — which is why this must not be a bare `any-pointer: coarse`
+  // test, that one is true on touchscreen laptops too.
+  const [touchOnly, setTouchOnly] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse) and (hover: none)");
+    const apply = () => setTouchOnly(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  // null means the query has not resolved yet, so render the full effect on the
+  // first pass — that avoids a flash of the static photo on desktop.
+  if (touchOnly) return <StaticPhoto {...props} />;
+  return <WebGLReveal {...props} />;
 }
