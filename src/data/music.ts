@@ -65,5 +65,11 @@ export const playlist: Track[] = [
     artist: "Khalid ",
     url: "https://music.youtube.com/watch?v=YhK2NwPIdt4&si=D1j5RF3u48nfbO3c",
   },
+  {
+    id: "falling-for-you",
+    title: "Falling for You",
+    artist: "1975 ",
+    url: "https://music.youtube.com/watch?v=4eERyRnD6Q8&si=2aB3piDSwMvPSi6Y",
+  },
 ];
 
