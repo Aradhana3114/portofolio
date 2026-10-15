@@ -43,7 +43,8 @@
     "highlySatisfactory": "Highly Satisfactory",
     "techStack": "Tech Stack",
     "myFocus": "My Focus",
-    "revealHint": "Tap & drag to reveal",
+    "revealHint": "Hover to reveal",
+    "revealHintTouch": "Tap to reveal",
     "downloadPhoto": "Download photo",
     "eyebrow": "Who Is This Guy"
   },

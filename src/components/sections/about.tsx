@@ -55,6 +55,7 @@ export function About() {
                   baseSrc="/images/me/me.png"
                   revealSrc="/images/me/spiderman.png"
                   hint={t("about.revealHint")}
+                  hintTouch={t("about.revealHintTouch")}
                   baseFocus={{ x: 0.478, y: 0.727 }}
                   baseZoom={1.55}
                   revealFocus={{ x: 0.493, y: 0.794 }}

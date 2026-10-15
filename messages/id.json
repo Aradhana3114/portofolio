@@ -43,7 +43,8 @@
     "highlySatisfactory": "Sangat Memuaskan",
     "techStack": "Tech Stack",
     "myFocus": "Fokus Saya",
-    "revealHint": "Sentuh & geser untuk reveal",
+    "revealHint": "Arahkan kursor untuk reveal",
+    "revealHintTouch": "Ketuk untuk reveal",
     "downloadPhoto": "Unduh foto",
     "eyebrow": "Siapa Saya"
   },

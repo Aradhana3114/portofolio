@@ -13,6 +13,8 @@ type FluidRevealProps = {
   idleAnimation?: boolean;
   edgeGlow?: boolean;
   hint?: string;
+  /** Hint shown on touch devices, where hover is unavailable. Falls back to `hint`. */
+  hintTouch?: string;
   /** Texture-space point (0–1) kept at canvas center. Default centers the crop. */
   baseFocus?: Focus;
   revealFocus?: Focus;
@@ -23,6 +25,10 @@ type FluidRevealProps = {
 };
 
 type Splat = { x: number; y: number; dx: number; dy: number };
+
+/** Max travel (px) and duration (ms) still counted as a tap, not a scroll. */
+const TAP_SLOP = 12;
+const TAP_MS = 400;
 
 type DoubleFBO = {
   read: { tex: WebGLTexture; fbo: WebGLFramebuffer; w: number; h: number };
@@ -318,6 +324,7 @@ export function FluidReveal({
   idleAnimation = true,
   edgeGlow = true,
   hint,
+  hintTouch,
   baseFocus = { x: 0.5, y: 0.38 },
   revealFocus = { x: 0.5, y: 0.3 },
   baseZoom = 1,
@@ -326,11 +333,28 @@ export function FluidReveal({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [glReady, setGlReady] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const [coarse, setCoarse] = useState(false);
+  // The toggle itself lives inside the WebGL effect (it owns the simulation).
+  // This ref lets the keyboard handler reach it without re-running the effect.
+  const toggleRef = useRef<() => void>(() => {});
   const propsRef = useRef({ fadeOnLeave, idleAnimation, edgeGlow, baseFocus, revealFocus, baseZoom, revealZoom });
   propsRef.current = { fadeOnLeave, idleAnimation, edgeGlow, baseFocus, revealFocus, baseZoom, revealZoom };
 
+  // "Tap & drag" is meaningless on a phone and "hover" is meaningless there
+  // too, so the hint follows whichever input the device actually has.
+  useEffect(() => {
+    const mq = window.matchMedia("(any-pointer: coarse)");
+    setCoarse(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setCoarse(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // Reset the toggle whenever the artwork changes.
   useEffect(() => {
     setGlReady(false);
+    setRevealed(false);
   }, [baseSrc, revealSrc]);
 
   useEffect(() => {
@@ -588,6 +612,12 @@ export function FluidReveal({
     let rectCache: DOMRect | null = null;
     let rectRaf = 0;
     const IDLE_STOP_MS = 900;
+    // Tap-to-toggle state lives as locals so the effect keeps its
+    // [baseSrc, revealSrc] deps; `revealed` mirrors it into React for a11y.
+    let touchRevealed = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartAt = 0;
 
     function refreshRect() {
       rectRaf = 0;
@@ -780,6 +810,9 @@ export function FluidReveal({
     }
 
     function setPointer(e: PointerEvent) {
+      // A finger dragging to scroll the page must not smear ink across it.
+      // Touch input is handled exclusively by the tap-to-toggle path below.
+      if (e.pointerType === "touch") return;
       wake();
       fading = false;
       const { px, py } = clientToUv(e.clientX, e.clientY);
@@ -797,6 +830,10 @@ export function FluidReveal({
     }
 
     function onPointerDown(e: PointerEvent) {
+      // Touch drives the tap-to-toggle path only. Capturing the pointer here
+      // would retarget every subsequent pointer event to the container, which
+      // swallowed taps on anything inside it.
+      if (e.pointerType === "touch") return;
       wake();
       fading = false;
       const { px, py } = clientToUv(e.clientX, e.clientY);
@@ -830,6 +867,7 @@ export function FluidReveal({
     }
 
     function onPointerLeave() {
+      if (touchRevealed) return;
       inside = false;
       if (e0Type === "mouse") {
         scheduleFade();
@@ -856,42 +894,80 @@ export function FluidReveal({
 
     function onPointerUp() {
       lastMove = performance.now();
+      // A tap that is about to re-open the reveal fires pointerup BEFORE
+      // touchend, so this still sees the previous state. Leaving the canvas
+      // must not fade a reveal the user deliberately switched on.
+      if (touchRevealed) return;
       if (e0Type === "touch" || e0Type === "pen") {
         inside = false;
         scheduleFade();
       }
     }
 
-    function onTouchMove(e: TouchEvent) {
-      const t = e.touches[0];
-      if (!t) return;
-      setPointer({
-        clientX: t.clientX,
-        clientY: t.clientY,
-      } as PointerEvent);
-      e.preventDefault();
+/* ---------- Touch: tap to toggle the reveal ----------
+       There is no hover on a phone, so the drag-to-paint interaction was
+       unreachable. A tap now flips the whole image between base and reveal.
+       Nothing here calls preventDefault(): doing so on touchstart suppresses
+       the synthesized click, and with touch-action: pan-y the browser keeps
+       ownership of vertical scrolling, so a finger resting on the photo no
+       longer freezes the page. */
+
+    function fillReveal() {
+      // Dye drives the base/reveal mix in the display shader, so the whole
+      // surface has to be splatted — a single tap-sized splat would only
+      // reveal a small patch.
+      const cols = 7;
+      const rows = 7;
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          queueSplat((x + 0.5) / cols, (y + 0.5) / rows, 0.002, 0.002);
+        }
+      }
     }
+
+    function setTouchRevealed(next: boolean) {
+      touchRevealed = next;
+      setRevealed(next);
+      fading = false;
+      clearBoost = 0;
+      lastMove = performance.now();
+      lastActive = performance.now();
+
+      if (next) {
+        initSim();
+        fillReveal();
+      } else {
+        splats.length = 0;
+        clearFluid();
+        render();
+      }
+
+      // `inside` stays false so the loop drains the queued splats and then
+      // self-terminates on IDLE_STOP_MS. The last frame persists on the
+      // canvas, so the revealed photo stays on screen without burning frames.
+      inside = false;
+      startLoop();
+    }
+
+    // Expose the toggle to the keyboard handler rendered outside this effect.
+    toggleRef.current = () => setTouchRevealed(!touchRevealed);
 
     function onTouchStart(e: TouchEvent) {
-      wake();
       const t = e.touches[0];
       if (!t) return;
-      const { px, py } = clientToUv(t.clientX, t.clientY);
-      e0Type = "touch";
-      lastX = px;
-      lastY = py;
-      inside = true;
-      clearBoost = 0;
-      window.clearTimeout(leaveTimer);
-      lastMove = performance.now();
-      queueSplat(px, py, 0, 0);
-      queueSplat(px, py, 0.002, 0.002);
-      e.preventDefault();
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+      touchStartAt = performance.now();
     }
 
-    function onTouchEnd() {
-      inside = false;
-      scheduleFade();
+    function onTouchEnd(e: TouchEvent) {
+      const t = e.changedTouches[0];
+      if (!t) return;
+      const dist = Math.hypot(t.clientX - touchStartX, t.clientY - touchStartY);
+      const dur = performance.now() - touchStartAt;
+      // Anything past this is a scroll or a drag, not a tap.
+      if (dist > TAP_SLOP || dur > TAP_MS) return;
+      setTouchRevealed(!touchRevealed);
     }
 
     function onResize() {
@@ -939,8 +1015,7 @@ export function FluidReveal({
     evTarget.addEventListener("pointerleave", onPointerLeave, { capture: true });
     evTarget.addEventListener("pointerup", onPointerUp, { capture: true });
     evTarget.addEventListener("pointercancel", onPointerLeave, { capture: true });
-    evTarget.addEventListener("touchstart", onTouchStart, { passive: false, capture: true });
-    evTarget.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
+    evTarget.addEventListener("touchstart", onTouchStart, { passive: true, capture: true });
     evTarget.addEventListener("touchend", onTouchEnd, { capture: true });
     evTarget.addEventListener("touchcancel", onTouchEnd, { capture: true });
     window.addEventListener("blur", onPointerLeave);
@@ -1023,7 +1098,6 @@ export function FluidReveal({
       evTarget.removeEventListener("pointerup", onPointerUp, { capture: true });
       evTarget.removeEventListener("pointercancel", onPointerLeave, { capture: true });
       evTarget.removeEventListener("touchstart", onTouchStart, { capture: true });
-      evTarget.removeEventListener("touchmove", onTouchMove, { capture: true });
       evTarget.removeEventListener("touchend", onTouchEnd, { capture: true });
       evTarget.removeEventListener("touchcancel", onTouchEnd, { capture: true });
       window.removeEventListener("blur", onPointerLeave);
@@ -1040,11 +1114,27 @@ export function FluidReveal({
     };
   }, [baseSrc, revealSrc]);
 
+// pan-y (not none): the browser keeps ownership of vertical scrolling, so
+  // dragging a finger across the photo scrolls the page instead of freezing
+  // it. Tap-to-toggle still works because nothing is prevented.
   return (
     <div
       ref={containerRef}
-      className={`relative aspect-square w-full overflow-hidden rounded-lg bg-black select-none ${glReady ? "touch-none" : ""} ${className}`}
-      style={{ cursor: glReady ? "none" : "auto" }}
+      className={`relative aspect-square w-full overflow-hidden rounded-lg bg-black select-none ${glReady ? "touch-pan-y" : ""} ${className}`}
+      style={{ cursor: glReady && !coarse ? "none" : "auto" }}
+      role={coarse ? "button" : undefined}
+      tabIndex={coarse ? 0 : undefined}
+      aria-pressed={coarse ? revealed : undefined}
+      aria-label={coarse ? (hintTouch ?? hint) : undefined}
+      onKeyDown={
+        coarse
+          ? (e) => {
+              if (e.key !== "Enter" && e.key !== " ") return;
+              e.preventDefault();
+              toggleRef.current();
+            }
+          : undefined
+      }
     >
       <img
         src={baseSrc}
@@ -1057,13 +1147,17 @@ export function FluidReveal({
         ref={canvasRef}
         aria-hidden={!glReady}
         className={`absolute inset-0 h-full w-full ${glReady ? "opacity-100" : "pointer-events-none opacity-0"}`}
-        style={{ touchAction: glReady ? "none" : "auto" }}
+        style={{ touchAction: glReady ? "pan-y" : "auto" }}
       />
-      {hint ? (
-        <div className="pointer-events-none absolute bottom-2 left-0 right-0 text-center text-[10px] tracking-wide text-white/45 select-none">
-          {hint}
-        </div>
-      ) : null}
+      {(() => {
+        const activeHint = coarse ? hintTouch ?? hint : hint;
+        if (!activeHint) return null;
+        return (
+          <div className="pointer-events-none absolute bottom-2 left-0 right-0 text-center text-[10px] tracking-wide text-white/45 select-none">
+            {activeHint}
+          </div>
+        );
+      })()}
     </div>
   );
 }
