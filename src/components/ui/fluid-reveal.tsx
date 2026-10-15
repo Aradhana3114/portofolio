@@ -588,6 +588,18 @@ export function FluidReveal({
     let rectCache: DOMRect | null = null;
     let rectRaf = 0;
     const IDLE_STOP_MS = 900;
+    // ---- Touch only. Never touched by mouse/pen, so desktop is unchanged. ----
+    // A tap latches the reveal on so the photo does not snap straight back the
+    // moment the finger lifts — on a phone there is no hover to hold it open.
+    let touchLatched = false;
+    let feedX = 0.5;
+    let feedY = 0.5;
+    let lastFeed = 0;
+    let tapStartX = 0;
+    let tapStartY = 0;
+    let tapStartAt = 0;
+    const TAP_SLOP = 12;
+    const TAP_MS = 400;
 
     function refreshRect() {
       rectRaf = 0;
@@ -809,6 +821,9 @@ export function FluidReveal({
       lastMove = performance.now();
       queueSplat(px, py, 0, 0);
       queueSplat(px, py, 0.002, 0.002);
+      // Touch drives the tap/drag path only. Capturing the pointer retargets
+      // every later pointer event to the container, which swallowed taps.
+      if (e.pointerType === "touch") return;
       try {
         container!.setPointerCapture(e.pointerId);
       } catch {
@@ -830,6 +845,7 @@ export function FluidReveal({
     }
 
     function onPointerLeave() {
+      if (touchLatched) return;
       inside = false;
       if (e0Type === "mouse") {
         scheduleFade();
@@ -856,6 +872,9 @@ export function FluidReveal({
 
     function onPointerUp() {
       lastMove = performance.now();
+      // A tap that is about to latch the reveal fires pointerup before touchend,
+      // so this still sees the previous state and must not fade it.
+      if (touchLatched) return;
       if (e0Type === "touch" || e0Type === "pen") {
         inside = false;
         scheduleFade();
@@ -865,11 +884,14 @@ export function FluidReveal({
     function onTouchMove(e: TouchEvent) {
       const t = e.touches[0];
       if (!t) return;
-      setPointer({
-        clientX: t.clientX,
-        clientY: t.clientY,
-      } as PointerEvent);
-      e.preventDefault();
+      // Deliberately no preventDefault(): with touch-action: pan-y the browser
+      // keeps ownership of vertical scrolling, so a finger dragging over the
+      // photo scrolls the page instead of freezing it. Dragging across the
+      // photo still paints the reveal.
+      const { px, py } = clientToUv(t.clientX, t.clientY);
+      feedX = px;
+      feedY = py;
+      setPointer({ clientX: t.clientX, clientY: t.clientY } as PointerEvent);
     }
 
     function onTouchStart(e: TouchEvent) {
@@ -880,18 +902,59 @@ export function FluidReveal({
       e0Type = "touch";
       lastX = px;
       lastY = py;
+      feedX = px;
+      feedY = py;
+      tapStartX = t.clientX;
+      tapStartY = t.clientY;
+      tapStartAt = performance.now();
       inside = true;
       clearBoost = 0;
       window.clearTimeout(leaveTimer);
       lastMove = performance.now();
       queueSplat(px, py, 0, 0);
       queueSplat(px, py, 0.002, 0.002);
-      e.preventDefault();
+      // No preventDefault() — on touchstart it suppresses the click the browser
+      // synthesises, which is why taps used to do nothing at all.
     }
 
-    function onTouchEnd() {
+    function onTouchEnd(e: TouchEvent) {
+      const t = e.changedTouches[0];
+      if (!t) return;
+      const dist = Math.hypot(t.clientX - tapStartX, t.clientY - tapStartY);
+      const dur = performance.now() - tapStartAt;
+      const isTap = dist <= TAP_SLOP && dur <= TAP_MS;
+
+      if (isTap) {
+        touchLatched = !touchLatched;
+        fading = false;
+        clearBoost = 0;
+        window.clearTimeout(leaveTimer);
+        lastMove = performance.now();
+        lastActive = performance.now();
+        inside = touchLatched;
+        if (touchLatched) {
+          // Re-splat at the tap point so the latch reopens the reveal even if
+          // the previous tap left the dye decayed.
+          queueSplat(feedX, feedY, 0, 0);
+          queueSplat(feedX, feedY, 0.002, 0.002);
+          startLoop();
+        } else {
+          scheduleFade();
+        }
+        return;
+      }
+
+      // A drag just finished: paint stays, then settles away as before.
+      if (touchLatched) return;
       inside = false;
       scheduleFade();
+    }
+
+    // touchcancel means the browser claimed the gesture (scrolling, system
+    // gesture). It must NOT toggle — sharing onTouchEnd with touchend could
+    // fire both for one tap and flip straight back.
+    function onTouchCancel() {
+      tapStartAt = 0;
     }
 
     function onResize() {
@@ -919,7 +982,7 @@ export function FluidReveal({
     function frame(now: number) {
       raf = 0;
       if (disposed) return;
-      if (!inside && !fading && now - lastActive > IDLE_STOP_MS) return;
+      if (!inside && !fading && !touchLatched && now - lastActive > IDLE_STOP_MS) return;
       if (now - last < PARAMS.frameInterval) {
         raf = requestAnimationFrame(frame);
         return;
@@ -927,6 +990,12 @@ export function FluidReveal({
       const dt = Math.min((now - last) / 1000, 0.033);
       last = now;
       idleSplats(dt);
+      // Hold a latched reveal open. Dye decays ~3% per frame, so without a
+      // small feed the photo fades out seconds after the tap and looks broken.
+      if (touchLatched && now - lastFeed > 150) {
+        lastFeed = now;
+        queueSplat(feedX, feedY, 0, 0);
+      }
       stepFluid(PARAMS.dt);
       render();
       startLoop();
@@ -939,10 +1008,10 @@ export function FluidReveal({
     evTarget.addEventListener("pointerleave", onPointerLeave, { capture: true });
     evTarget.addEventListener("pointerup", onPointerUp, { capture: true });
     evTarget.addEventListener("pointercancel", onPointerLeave, { capture: true });
-    evTarget.addEventListener("touchstart", onTouchStart, { passive: false, capture: true });
-    evTarget.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
+    evTarget.addEventListener("touchstart", onTouchStart, { passive: true, capture: true });
+    evTarget.addEventListener("touchmove", onTouchMove, { passive: true, capture: true });
     evTarget.addEventListener("touchend", onTouchEnd, { capture: true });
-    evTarget.addEventListener("touchcancel", onTouchEnd, { capture: true });
+    evTarget.addEventListener("touchcancel", onTouchCancel, { capture: true });
     window.addEventListener("blur", onPointerLeave);
     window.addEventListener("scroll", scheduleRectRefresh, { passive: true });
     window.addEventListener("resize", scheduleRectRefresh, { passive: true });
@@ -1025,7 +1094,7 @@ export function FluidReveal({
       evTarget.removeEventListener("touchstart", onTouchStart, { capture: true });
       evTarget.removeEventListener("touchmove", onTouchMove, { capture: true });
       evTarget.removeEventListener("touchend", onTouchEnd, { capture: true });
-      evTarget.removeEventListener("touchcancel", onTouchEnd, { capture: true });
+      evTarget.removeEventListener("touchcancel", onTouchCancel, { capture: true });
       window.removeEventListener("blur", onPointerLeave);
       canvas.removeEventListener("webglcontextlost", onContextLost);
 
@@ -1043,7 +1112,7 @@ export function FluidReveal({
   return (
     <div
       ref={containerRef}
-      className={`relative aspect-square w-full overflow-hidden rounded-lg bg-black select-none ${glReady ? "touch-none" : ""} ${className}`}
+      className={`relative aspect-square w-full overflow-hidden rounded-lg bg-black select-none ${glReady ? "touch-pan-y" : ""} ${className}`}
       style={{ cursor: glReady ? "none" : "auto" }}
     >
       <img
@@ -1057,7 +1126,7 @@ export function FluidReveal({
         ref={canvasRef}
         aria-hidden={!glReady}
         className={`absolute inset-0 h-full w-full ${glReady ? "opacity-100" : "pointer-events-none opacity-0"}`}
-        style={{ touchAction: glReady ? "none" : "auto" }}
+        style={{ touchAction: glReady ? "pan-y" : "auto" }}
       />
       {hint ? (
         <div className="pointer-events-none absolute bottom-2 left-0 right-0 text-center text-[10px] tracking-wide text-white/45 select-none">
