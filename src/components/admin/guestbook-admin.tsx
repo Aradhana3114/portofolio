@@ -1,15 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
-import { Lock, LogOut, Pencil, Plus, RefreshCw, Trash2, X, Eye, EyeOff } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { Lock, LogOut, Pencil, Plus, RefreshCw, Trash2, X, Eye, EyeOff, Mail } from "lucide-react";
 import type { AdminGuestbookEntry, GuestbookReply } from "@/data/types";
 import { Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { profile } from "@/data/profile";
+import { ADMIN_STORAGE_KEY } from "@/lib/admin-session";
 
-const STORAGE_KEY = "guestbook-admin-key";
 const OWNER_LABEL = profile.name.split(" ")[0];
 
 type GateState = "loading" | "locked" | "unlocked" | "misconfigured";
@@ -18,6 +18,7 @@ type Misconfigured = { missing: string[] };
 
 export function GuestbookAdmin() {
   const t = useTranslations();
+  const locale = useLocale();
   const [gate, setGate] = useState<GateState>("loading");
   const [missing, setMissing] = useState<string[]>([]);
   const [passcode, setPasscode] = useState("");
@@ -32,7 +33,7 @@ export function GuestbookAdmin() {
   const request = useCallback(
     async (path: string, init?: RequestInit) => {
       const key =
-        typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+        typeof window !== "undefined" ? window.localStorage.getItem(ADMIN_STORAGE_KEY) : null;
       if (!key) throw new Error("NO_KEY");
 
       const res = await fetch(path, {
@@ -46,7 +47,7 @@ export function GuestbookAdmin() {
       });
 
       if (res.status === 401) {
-        window.localStorage.removeItem(STORAGE_KEY);
+        window.localStorage.removeItem(ADMIN_STORAGE_KEY);
         setGate("locked");
         throw new Error("UNAUTHORIZED");
       }
@@ -77,7 +78,7 @@ export function GuestbookAdmin() {
 
   // On mount: validate any stored passcode before showing the editor.
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const stored = window.localStorage.getItem(ADMIN_STORAGE_KEY);
     if (!stored) {
       setGate("locked");
       return;
@@ -127,7 +128,7 @@ export function GuestbookAdmin() {
 
     const data = await res.json().catch(() => ({}));
     // Only persist after the server has accepted it.
-    window.localStorage.setItem(STORAGE_KEY, candidate);
+    window.localStorage.setItem(ADMIN_STORAGE_KEY, candidate);
     setPasscode("");
     setEntries(data.entries ?? []);
     setGate("unlocked");
@@ -135,7 +136,7 @@ export function GuestbookAdmin() {
   }
 
   function lock() {
-    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(ADMIN_STORAGE_KEY);
     setEntries([]);
     setGate("locked");
   }
@@ -174,6 +175,15 @@ export function GuestbookAdmin() {
           </div>
           {gate === "unlocked" && (
             <div className="flex items-center gap-3">
+              <Button
+                variant="secondary"
+                size="sm"
+                href={`/${locale}/admin/contact`}
+                className="gap-2"
+              >
+                <Mail size={14} strokeWidth={3} />
+                {t("admin.navContact")}
+              </Button>
               <Button variant="secondary" size="sm" onClick={loadEntries} className="gap-2">
                 <RefreshCw size={14} strokeWidth={3} />
                 {t("admin.refresh")}

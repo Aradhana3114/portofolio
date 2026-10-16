@@ -69,3 +69,13 @@ export interface GuestbookEntryWithReply extends GuestbookEntry {
 export interface AdminGuestbookEntry extends GuestbookEntry {
   replies: GuestbookReply[];
 }
+
+/** A submission from the public contact form ("Let's Start A Project"). */
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  created_at: string;
+}

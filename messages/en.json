@@ -321,6 +321,17 @@
     "save": "Save",
     "cancel": "Cancel",
     "showPasscode": "Show passcode",
-    "hidePasscode": "Hide passcode"
+    "hidePasscode": "Hide passcode",
+    "navContact": "Contact"
+  },
+  "adminContact": {
+    "title": "Contact Admin",
+    "subtitle": "Edit or delete messages from the contact form. This page is not linked from the navigation.",
+    "navGuestbook": "Guestbook",
+    "deleteMessage": "Delete message",
+    "confirmDeleteMessage": "Delete the message from \"{name}\"? This cannot be undone.",
+    "editMessage": "Edit message",
+    "replyEmail": "Reply by email",
+    "subjectLabel": "Subject"
   }
 }

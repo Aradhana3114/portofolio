@@ -321,6 +321,17 @@
     "save": "Simpan",
     "cancel": "Batal",
     "showPasscode": "Tampilkan passcode",
-    "hidePasscode": "Sembunyikan passcode"
+    "hidePasscode": "Sembunyikan passcode",
+    "navContact": "Kontak"
+  },
+  "adminContact": {
+    "title": "Kelola Pesan Kontak",
+    "subtitle": "Ubah atau hapus pesan dari formulir kontak. Halaman ini tidak ditampilkan di navigasi.",
+    "navGuestbook": "Buku Tamu",
+    "deleteMessage": "Hapus pesan",
+    "confirmDeleteMessage": "Hapus pesan dari \"{name}\"? Tindakan ini tidak bisa dibatalkan.",
+    "editMessage": "Ubah pesan",
+    "replyEmail": "Balas via email",
+    "subjectLabel": "Subjek"
   }
 }
