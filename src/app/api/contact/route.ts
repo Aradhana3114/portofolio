@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { sendDesignEmail } from "@/lib/notify-email";
 
 const FORMSPREE_ENDPOINT = "https://formspree.io/f";
 const FORMSPREE_TIMEOUT_MS = 10_000;
@@ -86,6 +87,21 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: `Message could not be delivered via Formspree. ${detail}` },
         { status: 502 }
+      );
+    }
+
+    try {
+      await sendDesignEmail({
+        name,
+        email,
+        subject,
+        message,
+        origin: new URL(request.url).origin,
+      });
+    } catch (err) {
+      console.error(
+        "[contact] Designed email failed (Formspree delivery already succeeded):",
+        err instanceof Error ? err.message : err
       );
     }
 
