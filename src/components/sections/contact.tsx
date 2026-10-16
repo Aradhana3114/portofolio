@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Github, Linkedin, Instagram, Send, MessageCircle } from "lucide-react";
+import { Mail, Github, Linkedin, Instagram, Send, MessageCircle, Loader2 } from "lucide-react";
 import { profile } from "@/data/profile";
 import { socials } from "@/data/socials";
 import { useIntersection } from "@/hooks/use-intersection";
@@ -34,6 +34,7 @@ export function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (status === "loading") return;
     setStatus("loading");
     setErrorMsg("");
 
@@ -142,6 +143,7 @@ export function Contact() {
                     value={formData.name}
                     onChange={handleChange}
                     required
+                    maxLength={100}
                     className={fieldStyles}
                     placeholder={t("contact.namePlaceholder")}
                   />
@@ -161,6 +163,7 @@ export function Contact() {
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    maxLength={255}
                     className={fieldStyles}
                     placeholder={t("contact.emailPlaceholder")}
                   />
@@ -200,6 +203,7 @@ export function Contact() {
                     onChange={handleChange}
                     required
                     rows={6}
+                    maxLength={5000}
                     className={fieldStyles}
                     placeholder={t("contact.messagePlaceholder")}
                   />
@@ -218,7 +222,11 @@ export function Contact() {
 
                 <Button type="submit" size="lg" disabled={status === "loading"} className="w-full">
                   {status === "loading" ? t("common.sending") : t("contact.send")}
-                  <Send size={18} strokeWidth={3} />
+                  {status === "loading" ? (
+                    <Loader2 size={18} strokeWidth={3} className="animate-spin" />
+                  ) : (
+                    <Send size={18} strokeWidth={3} />
+                  )}
                 </Button>
               </form>
             </BrutalCard>
