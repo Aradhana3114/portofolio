@@ -13,12 +13,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const root = document.documentElement;
     let frame = 0;
+    let lastHue = -1;
 
     const update = () => {
       frame = 0;
       const max = root.scrollHeight - window.innerHeight;
       const progress = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
-      root.style.setProperty("--scroll-hue", String(Math.round(progress * 360)));
+      // Only write when the rounded degree actually changes. The rainbow is
+      // quantised to 1deg, so across a full page that is a couple of hundred
+      // writes instead of one per animation frame — and each write used to
+      // invalidate the scrollbar rule and force a style recalc of the document.
+      const hue = Math.round(progress * 360);
+      if (hue === lastHue) return;
+      lastHue = hue;
+      root.style.setProperty("--scroll-hue", String(hue));
     };
 
     const onScroll = () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 interface CursorProps {
   size?: number;
@@ -8,23 +8,27 @@ interface CursorProps {
 
 export const Cursor: React.FC<CursorProps> = ({ size = 32 }) => {
   const cursorRef = useRef<HTMLDivElement>(null);
-  // Only deviation from the source snippet: @types/react 19 removed the
-  // zero-argument useRef overload, so `useRef<number>()` is a compile error
-  // (TS2554). An explicit `undefined` is the same runtime value.
+  // @types/react 19 removed the zero-argument useRef overload, so `useRef<number>()`
+  // is a compile error (TS2554). An explicit `undefined` is the same runtime value.
   const requestRef = useRef<number | undefined>(undefined);
   const previousPos = useRef({ x: -size, y: -size }); // start off-screen
-
+  // The pointer target lives in a ref, not in state. Holding it in state made every
+  // mousemove a React re-render, and because the rAF effect depends on `animate`
+  // (recreated on each render) that also tore down and restarted the loop on every
+  // single mousemove. A ref keeps the follow loop entirely out of React's way.
+  const targetPos = useRef({ x: -size, y: -size });
   const [visible, setVisible] = useState(false);
-  const [position, setPosition] = useState({ x: -size, y: -size });
 
-  // Animation loop for smooth cursor follow
-  const animate = () => {
-    if (!cursorRef.current) return;
+  // Only `visible` still goes through state, so the component re-renders twice per
+  // session (pointer in, pointer out) instead of once per mouse event.
+  const animate = useCallback(() => {
+    const el = cursorRef.current;
+    if (!el) return;
 
     const currentX = previousPos.current.x;
     const currentY = previousPos.current.y;
-    const targetX = position.x - size / 2;
-    const targetY = position.y - size / 2;
+    const targetX = targetPos.current.x - size / 2;
+    const targetY = targetPos.current.y - size / 2;
 
     const deltaX = (targetX - currentX) * 0.2;
     const deltaY = (targetY - currentY) * 0.2;
@@ -33,10 +37,19 @@ export const Cursor: React.FC<CursorProps> = ({ size = 32 }) => {
     const newY = currentY + deltaY;
 
     previousPos.current = { x: newX, y: newY };
-    cursorRef.current.style.transform = `translate(${newX}px, ${newY}px)`;
 
+    // Once the easing has converged there is nothing left to paint. Skipping the
+    // write matters because `mix-blend-mode: difference` forces the browser to
+    // re-composite everything painted underneath the cursor, so an idle cursor
+    // that keeps re-writing its transform still costs a full repaint per frame.
+    if (Math.abs(deltaX) < 0.05 && Math.abs(deltaY) < 0.05) {
+      requestRef.current = requestAnimationFrame(animate);
+      return;
+    }
+
+    el.style.transform = `translate(${newX}px, ${newY}px)`;
     requestRef.current = requestAnimationFrame(animate);
-  };
+  }, [size]);
 
   useEffect(() => {
     // Touch-only devices have no cursor, so skip the listeners, the rAF loop and
@@ -52,8 +65,8 @@ export const Cursor: React.FC<CursorProps> = ({ size = 32 }) => {
     }
 
     const handleMouseMove = (e: MouseEvent) => {
+      targetPos.current = { x: e.clientX, y: e.clientY };
       setVisible(true);
-      setPosition({ x: e.clientX, y: e.clientY });
     };
 
     const handleMouseEnter = () => {
@@ -89,6 +102,9 @@ export const Cursor: React.FC<CursorProps> = ({ size = 32 }) => {
         width: size,
         height: size,
         opacity: visible ? 1 : 0,
+        // Own compositor layer, so the difference blend resolves on the GPU
+        // against a cached backdrop instead of repainting the page each frame.
+        willChange: "transform",
       }}
       aria-hidden="true"
     />

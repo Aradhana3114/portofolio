@@ -310,6 +310,9 @@ const PARAMS = {
   dt: 0.016,
   maxDpr: 1,
   frameInterval: 25,
+  // Used once the pointer has been still for a beat — see the `frame` loop. The
+  // idle drift is a slow sine wave, so ~18fps is indistinguishable from 40fps.
+  idleFrameInterval: 55,
 };
 
 function WebGLReveal({
@@ -587,9 +590,10 @@ function WebGLReveal({
     let pageHidden = false;
     let fading = false;
     let lastActive = performance.now();
-    let rectCache: DOMRect | null = null;
+    let rectCache: { top: number; left: number; width: number; height: number } | null = null;
+    let rectScrollY = 0;
     let rectRaf = 0;
-    const IDLE_STOP_MS = 900;
+    const IDLE_STOP_MS = 2600;
     // ---- Touch only. Never touched by mouse/pen, so desktop is unchanged. ----
     // A tap latches the reveal on so the photo does not snap straight back the
     // moment the finger lifts — on a phone there is no hover to hold it open.
@@ -603,14 +607,26 @@ function WebGLReveal({
     const TAP_SLOP = 12;
     const TAP_MS = 400;
 
+    // Measured in DOCUMENT space, not viewport space, so a scroll does not need a
+    // layout read: the viewport-space top is just `top - scrollY`. The old version
+    // called getBoundingClientRect() on every scroll frame, which forces a
+    // synchronous layout right in the middle of the Lenis scroll loop.
     function refreshRect() {
       rectRaf = 0;
-      rectCache = canvas!.getBoundingClientRect();
+      const r = canvas!.getBoundingClientRect();
+      rectScrollY = window.scrollY;
+      rectCache = { top: r.top + rectScrollY, left: r.left, width: r.width, height: r.height };
     }
 
     function scheduleRectRefresh() {
       if (rectRaf) return;
       rectRaf = requestAnimationFrame(refreshRect);
+    }
+
+    // Scroll handler: reads scrollY only, never the DOM layout. That single number
+    // is all `clientToUv` needs to place a pointer in the card's own coordinates.
+    function onScrollFrame() {
+      rectScrollY = window.scrollY;
     }
 
     function wake() {
@@ -784,9 +800,11 @@ function WebGLReveal({
     }
 
     function clientToUv(clientX: number, clientY: number) {
-      const rect = rectCache ?? canvas!.getBoundingClientRect();
+      if (!rectCache) refreshRect();
+      const rect = rectCache!;
+      const top = rect.top - rectScrollY;
       const px = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-      const py = Math.min(1, Math.max(0, 1 - (clientY - rect.top) / rect.height));
+      const py = Math.min(1, Math.max(0, 1 - (clientY - top) / rect.height));
       return { px, py };
     }
 
@@ -1004,8 +1022,17 @@ function WebGLReveal({
     function frame(now: number) {
       raf = 0;
       if (disposed) return;
-      if (!inside && !fading && !touchLatched && now - lastActive > IDLE_STOP_MS) return;
-      if (now - last < PARAMS.frameInterval) {
+      // Park the simulation once nothing is driving it. `fading` keeps it alive so
+      // a reveal can finish retracting, and `touchLatched` keeps it alive so a
+      // tapped-on phone does not freeze mid-reveal. Previously the `!inside` guard
+      // meant that merely hovering the card with a still mouse ran the 7-pass
+      // solver forever at full rate.
+      if (!fading && !touchLatched && now - lastActive > IDLE_STOP_MS) return;
+      // Full rate while the pointer is actually moving, half rate for the ambient
+      // idle drift. The solver is the single most expensive thing on the page and
+      // nothing about it needs 40fps once the user has stopped interacting.
+      const interval = now - lastMove < 250 ? PARAMS.frameInterval : PARAMS.idleFrameInterval;
+      if (now - last < interval) {
         raf = requestAnimationFrame(frame);
         return;
       }
@@ -1035,7 +1062,7 @@ function WebGLReveal({
     evTarget.addEventListener("touchend", onTouchEnd, { capture: true });
     evTarget.addEventListener("touchcancel", onTouchCancel, { capture: true });
     window.addEventListener("blur", onPointerLeave);
-    window.addEventListener("scroll", scheduleRectRefresh, { passive: true });
+    window.addEventListener("scroll", onScrollFrame, { passive: true });
     window.addEventListener("resize", scheduleRectRefresh, { passive: true });
 
     const ro = new ResizeObserver(() => {
@@ -1047,6 +1074,11 @@ function WebGLReveal({
     const io = new IntersectionObserver(
       ([entry]) => {
         inView = entry.isIntersecting;
+        // Re-measure on the way in. The cached rect is document-space, so a
+        // late layout shift above the card (font swap, a late-loading image) would
+        // otherwise leave it stale — and nothing re-measures it while the card is
+        // already on screen, because the scroll handler only reads scrollY now.
+        if (inView) refreshRect();
         if (inView && !pageHidden) startLoop();
         else {
           stopLoop();
@@ -1104,7 +1136,7 @@ function WebGLReveal({
       window.clearTimeout(leaveTimer);
       ro.disconnect();
       io.disconnect();
-      window.removeEventListener("scroll", scheduleRectRefresh);
+      window.removeEventListener("scroll", onScrollFrame);
       window.removeEventListener("resize", scheduleRectRefresh);
       document.removeEventListener("visibilitychange", onVisibility);
       evTarget.removeEventListener("pointerdown", onPointerDown, { capture: true });
@@ -1192,18 +1224,28 @@ export function FluidReveal(props: FluidRevealProps) {
   // A touchscreen laptop still reports hover through its trackpad, so it keeps
   // the effect — which is why this must not be a bare `any-pointer: coarse`
   // test, that one is true on touchscreen laptops too.
-  const [touchOnly, setTouchOnly] = useState<boolean | null>(null);
+  //
+  // Reduced motion also falls back to the plain image. The solver is a permanent
+  // 7-pass WebGL loop and reduced-motion is an explicit request for the page to
+  // stop moving things on its own, so honouring it here is both the polite and
+  // the cheap option.
+  const [staticOnly, setStaticOnly] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const mq = window.matchMedia("(pointer: coarse) and (hover: none)");
-    const apply = () => setTouchOnly(mq.matches);
+    const coarse = window.matchMedia("(pointer: coarse) and (hover: none)");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setStaticOnly(coarse.matches || reduced.matches);
     apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
+    coarse.addEventListener("change", apply);
+    reduced.addEventListener("change", apply);
+    return () => {
+      coarse.removeEventListener("change", apply);
+      reduced.removeEventListener("change", apply);
+    };
   }, []);
 
   // null means the query has not resolved yet, so render the full effect on the
   // first pass — that avoids a flash of the static photo on desktop.
-  if (touchOnly) return <StaticPhoto {...props} />;
+  if (staticOnly) return <StaticPhoto {...props} />;
   return <WebGLReveal {...props} />;
 }
