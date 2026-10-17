@@ -24,10 +24,19 @@ const config: Config = {
           purple: "rgb(var(--brutal-purple) / <alpha-value>)",
           ink: "rgb(var(--brutal-ink) / <alpha-value>)",
         },
+        /* Scoped to the editorial impact headline band only — does not touch
+           the light/dark theme tokens in globals.css. */
+        impact: {
+          wash: "#E9F2CE",
+          ink: "#101400",
+          bone: "#EDE9DE",
+          lime: "#D2FF00",
+        },
       },
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
         body: ["var(--font-body)", "sans-serif"],
+        serif: ["var(--font-serif)", "serif"],
       },
       fontSize: {
         display: ["clamp(2.25rem,6vw,5.75rem)", { lineHeight: "0.88", letterSpacing: "-0.035em" }],
@@ -101,6 +110,13 @@ const config: Config = {
           from: { transform: "translateX(0)" },
           to: { transform: "translateX(-50%)" },
         },
+        "impact-drift": {
+          "0%": { transform: "translate3d(0,0,0)" },
+          "100%": { transform: "translate3d(-70px,24px,0)" },
+        },
+        "impact-dash": {
+          to: { strokeDashoffset: "-480" },
+        },
       },
       animation: {
         wiggle: "wiggle 0.6s ease-in-out infinite",
@@ -108,6 +124,9 @@ const config: Config = {
         "bob-slow": "bob-slow 2.4s ease-in-out infinite",
         stamp: "stamp 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both",
         "pop-in": "pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+        "impact-drift-slow":
+          "impact-drift 24s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate",
+        "impact-dash-slow": "impact-dash 28s linear infinite",
       },
     },
   },

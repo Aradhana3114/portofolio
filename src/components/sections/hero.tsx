@@ -6,6 +6,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { profile } from "@/data/profile";
 import { Button } from "@/components/ui/button";
 import { SplitText } from "@/components/ui/split-text";
+import { TypeLoop } from "@/components/ui/type-loop";
 import { MarkerBand } from "@/components/ui/marker-band";
 import { Sticker } from "@/components/ui/sticker";
 import { ArrowDown, MapPin } from "lucide-react";
@@ -67,7 +68,7 @@ export function Hero() {
           className="mb-3 flex flex-wrap items-center justify-center gap-2 sm:gap-3"
         >
           <Sticker tone="green" rotate={-2} wiggle className="px-3 py-1 text-metadata">
-            <span className="h-2 w-2 animate-blink-hard border-[2px] border-border bg-brutal-ink" aria-hidden="true" />
+            <span className="h-2 w-2 animate-pulse-soft border-[2px] border-border bg-brutal-ink" aria-hidden="true" />
             {t("profile.availability")}
           </Sticker>
 
@@ -100,17 +101,20 @@ export function Hero() {
           <MarkerBand
             letters={lastName.length}
             delay={lastNameDelay}
-            stagger={STAGGER}
+            stagger={0.15}
             play={ready}
             tilt={-1.5}
             className="mt-3"
           >
-            <SplitText
+            <TypeLoop
               as="h1"
               text={lastName}
-              className="block sm:whitespace-nowrap font-display text-display font-extrabold uppercase leading-[0.88] tracking-tighter text-brutal-ink"
-              delay={lastNameDelay}
-              stagger={STAGGER}
+              className="block font-display text-display font-extrabold uppercase leading-[0.88] tracking-tighter text-brutal-ink"
+              delay={lastNameDelay * 1000}
+              typeSpeed={150}
+              deleteSpeed={70}
+              hold={2600}
+              rest={700}
               play={ready}
               tilt={2.5}
             />

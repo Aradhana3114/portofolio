@@ -3,7 +3,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { routing } from "@/i18n/routing";
-import { Bricolage_Grotesque, Inter } from "next/font/google";
+import { Bricolage_Grotesque, Instrument_Serif, Inter } from "next/font/google";
 import type { Metadata } from "next";
 import { MusicPlayer } from "@/components/music-player";
 import { Providers } from "@/components/providers";
@@ -20,6 +20,13 @@ const displayFont = Bricolage_Grotesque({
 const bodyFont = Inter({
   subsets: ["latin"],
   variable: "--font-body",
+  display: "swap",
+});
+
+const impactFont = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-serif",
   display: "swap",
 });
 
@@ -56,7 +63,11 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-      <html lang={locale} className={`${displayFont.variable} ${bodyFont.variable}`} suppressHydrationWarning>
+      <html
+        lang={locale}
+        className={`${displayFont.variable} ${bodyFont.variable} ${impactFont.variable}`}
+        suppressHydrationWarning
+      >
       <body className="font-body antialiased">
         <script
           dangerouslySetInnerHTML={{
